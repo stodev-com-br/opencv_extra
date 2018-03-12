@@ -220,6 +220,65 @@ models = [
         url='https://github.com/opencv/opencv_3rdparty/raw/dnn_samples_face_detector_20170830/res10_300x300_ssd_iter_140000.caffemodel',
         sha='15aa726b4d46d9f023526d85537db81cbc8dd566',
         filename='opencv_face_detector.caffemodel'),
+    Model(
+        name='Face_detector (FP16)',
+        url='https://github.com/opencv/opencv_3rdparty/raw/19512576c112aa2c7b6328cb0e8d589a4a90a26d/res10_300x300_ssd_iter_140000_fp16.caffemodel',
+        sha='31fc22bfdd907567a04bb45b7cfad29966caddc1',
+        filename='opencv_face_detector_fp16.caffemodel'),
+    Model(
+        name='Face_detector (UINT8)',
+        url='https://github.com/opencv/opencv_3rdparty/raw/8033c2bc31b3256f0d461c919ecc01c2428ca03b/opencv_face_detector_uint8.pb',
+        sha='4f2fdf6f231d759d7bbdb94353c5a68690f3d2ae',
+        filename='opencv_face_detector_uint8.pb'),
+    Model(
+        name='InceptionV2-SSD (TensorFlow)',
+        url='http://download.tensorflow.org/models/object_detection/ssd_inception_v2_coco_2017_11_17.tar.gz',
+        sha='b9546dcd1ba99282b5bfa81c460008c885ca591b',
+        filename='ssd_inception_v2_coco_2017_11_17.tar.gz'),
+    Model(
+        name='InceptionV2-SSD (TensorFlow)',
+        archive='ssd_inception_v2_coco_2017_11_17.tar.gz',
+        member='ssd_inception_v2_coco_2017_11_17/frozen_inference_graph.pb',
+        sha='554a75594e9fd1ccee291b3ba3f1190b868a54c9',
+        filename='ssd_inception_v2_coco_2017_11_17.pb'),
+    Model(
+        name='Faster-RCNN',  # https://github.com/rbgirshick/py-faster-rcnn
+        url='https://dl.dropboxusercontent.com/s/o6ii098bu51d139/faster_rcnn_models.tgz?dl=0',
+        sha='51bca62727c3fe5d14b66e9331373c1e297df7d1',
+        filename='faster_rcnn_models.tgz'),
+    Model(
+        name='Faster-RCNN VGG16',
+        archive='faster_rcnn_models.tgz',
+        member='faster_rcnn_models/VGG16_faster_rcnn_final.caffemodel',
+        sha='dd099979468aafba21f3952718a9ceffc7e57699',
+        filename='VGG16_faster_rcnn_final.caffemodel'),
+    Model(
+        name='Faster-RCNN ZF',
+        archive='faster_rcnn_models.tgz',
+        member='faster_rcnn_models/ZF_faster_rcnn_final.caffemodel',
+        sha='7af886686f149622ed7a41c08b96743c9f4130f5',
+        filename='ZF_faster_rcnn_final.caffemodel'),
+    Model(
+        name='R-FCN',  # https://github.com/YuwenXiong/py-R-FCN
+        url='https://onedrive.live.com/download?cid=10B28C0E28BF7B83&resid=10B28C0E28BF7B83%215317&authkey=%21AIeljruhoLuail8',
+        sha='bb3180da68b2b71494f8d3eb8f51b2d47467da3e',
+        filename='rfcn_models.tar.gz'),
+    Model(
+        name='R-FCN ResNet-50',
+        archive='rfcn_models.tar.gz',
+        member='rfcn_models/resnet50_rfcn_final.caffemodel',
+        sha='e00beca7af2790801efb1724d77bddba89e7081c',
+        filename='resnet50_rfcn_final.caffemodel'),
+    Model(
+        name='OpenPose/pose/coco',  # https://github.com/CMU-Perceptual-Computing-Lab/openpose
+        url='http://posefs1.perception.cs.cmu.edu/OpenPose/models/pose/coco/pose_iter_440000.caffemodel',
+        sha='ac7e97da66f3ab8169af2e601384c144e23a95c1',
+        filename='openpose_pose_coco.caffemodel'),
+    Model(
+        name='OpenPose/pose/mpi',  # https://github.com/CMU-Perceptual-Computing-Lab/openpose
+        url='http://posefs1.perception.cs.cmu.edu/OpenPose/models/pose/mpi/pose_iter_160000.caffemodel',
+        sha='a344f4da6b52892e44a0ca8a4c68ee605fc611cf',
+        filename='openpose_pose_mpi.caffemodel'),
 ]
 
 # Note: models will be downloaded to current working directory
