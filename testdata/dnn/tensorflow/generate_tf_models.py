@@ -215,6 +215,10 @@ shifted = tf.add(inp, shift, name='shifted')
 reshape = tf.reshape(shifted, [4, 3, 2], 'reshaped')
 save(inp, reshape, 'shift_reshape_no_reorder')
 ################################################################################
+inp = tf.placeholder(tf.float32, [1, 2, 3], 'input')
+reshape = tf.reshape(inp, [3, 1, 2], 'reshaped')
+save(inp, reshape, 'reshape_no_reorder')
+################################################################################
 inp = tf.placeholder(tf.float32, [2, 10, 10, 3], 'input')
 pad = tf.pad(inp, [[0, 0], [3, 3], [3, 3], [0, 0]])
 conv = tf.layers.conv2d(inp, filters=4, kernel_size=[5, 5], strides=(2, 2),
@@ -497,6 +501,81 @@ save(sess.graph.get_tensor_by_name('keras_deconv_same_input:0'),
 inp = tf.placeholder(tf.float32, [2, 3, 4, 5], 'input')
 resized = tf.image.resize_bilinear(inp, size=[9, 8], name='resize_bilinear')
 save(inp, resized, 'resize_bilinear')
+################################################################################
+inp = tf.placeholder(tf.float32, [None, 3, 4, 5], 'input')
+resized = tf.image.resize_bilinear(inp, size=[tf.shape(inp)[1]*2, tf.shape(inp)[2]*3],
+                                   name='resize_bilinear_factor')
+sub_add = resized - 0.3 + 0.3
+save(inp, sub_add, 'resize_bilinear_factor', optimize=False)
+################################################################################
+model = K.models.Sequential()
+model.add(K.layers.SeparableConv2D(filters=4, kernel_size=3, strides=(1, 1),
+                                   dilation_rate=(2, 3), name='keras_atrous_conv2d_same',
+                                   input_shape=(11, 12, 2), padding='same'))
+sess = K.backend.get_session()
+sess.as_default()
+save(sess.graph.get_tensor_by_name('keras_atrous_conv2d_same_input:0'),
+     sess.graph.get_tensor_by_name('keras_atrous_conv2d_same/BiasAdd:0'),
+     'keras_atrous_conv2d_same', optimize=True)
+################################################################################
+# Generate test data for Faster-RCNN object detection model from TensorFlow
+# model zoo, http://download.tensorflow.org/models/object_detection/faster_rcnn_inception_v2_coco_2018_01_28.tar.gz
+with tf.gfile.FastGFile('../faster_rcnn_inception_v2_coco_2018_01_28.pb') as f:
+    # Load the model
+    graph_def = tf.GraphDef()
+    graph_def.ParseFromString(f.read())
+
+with tf.Session(graph=tf.Graph()) as localSession:
+    # Restore session
+    localSession.graph.as_default()
+    tf.import_graph_def(graph_def, name='')
+
+    # Receive output
+    inp = cv.imread('../dog416.png')
+    inp = cv.resize(inp, (800, 600))
+    inp = inp[:, :, [2, 1, 0]]  # BGR2RGB
+    out = localSession.run([localSession.graph.get_tensor_by_name('num_detections:0'),   #
+                            localSession.graph.get_tensor_by_name('detection_scores:0'),   #
+                            localSession.graph.get_tensor_by_name('detection_boxes:0'),    #
+                            localSession.graph.get_tensor_by_name('detection_classes:0')], #
+                   feed_dict={'image_tensor:0': inp.reshape(1, inp.shape[0], inp.shape[1], 3)})
+    # Pack detections in format [id, class_id, confidence, left, top, right, bottom]
+    num_detections = int(out[0][0])
+    detections = np.zeros([1, 1, num_detections, 7], np.float32)
+    detections[0, 0, :, 1] = out[3][0, :num_detections] - 1
+    detections[0, 0, :, 2] = out[1][0, :num_detections]
+    detections[0, 0, :, 3:] = out[2][:, :num_detections, [1, 0, 3, 2]]
+    # Detections are sorted in descending by confidence order. Group them by classes
+    # to make OpenCV test more simple.
+    detections = sorted(detections[0, 0, :, :], cmp=lambda x, y: -1 if x[1] < y[1] and x[2] < y[2] else 0)
+    np.save('faster_rcnn_inception_v2_coco_2018_01_28.detection_out.npy', detections)
+################################################################################
+inp = tf.placeholder(tf.float32, [1, 2, 3, 4], 'input')
+conv1 = tf.layers.conv2d(inp, filters=4, kernel_size=[1, 1])
+conv2 = tf.layers.conv2d(inp, filters=4, kernel_size=[1, 1])
+flatten1 = tf.contrib.layers.flatten(conv1)
+flatten2 = tf.contrib.layers.flatten(conv2)
+concat = tf.concat([flatten1, flatten2], axis=1)
+bias = tf.contrib.layers.bias_add(concat)  # Add zeros (it has NHWC data format flag)
+save(inp, bias, 'concat_axis_1')
+################################################################################
+inp = tf.placeholder(tf.float32, [1, 3, 5, 8], 'input')  # NCHW input
+conv = tf.layers.conv2d(inp, filters=4, kernel_size=[2, 3], data_format='channels_first')
+pool = tf.layers.max_pooling2d(conv, pool_size=2, strides=2, data_format='channels_first')
+save(inp, pool, 'conv_pool_nchw')
+# Input and output have been transposed (see writeBlob)
+for name in ['conv_pool_nchw_in.npy', 'conv_pool_nchw_out.npy']:
+    np.save(name, np.load(name).transpose(0, 2, 3, 1))
+################################################################################
+model = K.models.Sequential()
+
+model.add(K.layers.UpSampling2D(size=(3, 2), data_format='channels_last',
+                          name='keras_upsampling2d', input_shape=(2, 3, 4)))
+sess = K.backend.get_session()
+sess.as_default()
+save(sess.graph.get_tensor_by_name('keras_upsampling2d_input:0'),
+     sess.graph.get_tensor_by_name('keras_upsampling2d/ResizeNearestNeighbor:0'),
+     'keras_upsampling2d')
 ################################################################################
 
 # Uncomment to print the final graph.

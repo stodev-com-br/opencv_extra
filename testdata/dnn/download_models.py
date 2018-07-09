@@ -166,7 +166,7 @@ models = [
         filename='yolo-voc.weights'),
     Model(
         name='TinyYoloV2voc',  # https://pjreddie.com/darknet/yolo/
-        url='https://pjreddie.com/media/files/tiny-yolo-voc.weights',
+        url='https://pjreddie.com/media/files/yolov2-tiny-voc.weights',
         sha='24b4bd049fc4fa5f5e95f684a8967e65c625dff9',
         filename='tiny-yolo-voc.weights'),
     Model(
@@ -200,6 +200,28 @@ models = [
         member='ssd_mobilenet_v1_coco_11_06_2017/frozen_inference_graph.pb',
         sha='aaf36f068fab10359eadea0bc68388d96cf68139',
         filename='ssd_mobilenet_v1_coco.pb'),
+    Model(
+        name='MobileNet-SSD v1 (TensorFlow)',
+        url='http://download.tensorflow.org/models/object_detection/ssd_mobilenet_v1_coco_2017_11_17.tar.gz',
+        sha='6157ddb6da55db2da89dd561eceb7f944928e317',
+        filename='ssd_mobilenet_v1_coco_2017_11_17.tar.gz'),
+    Model(
+        name='MobileNet-SSD v1 (TensorFlow)',
+        archive='ssd_mobilenet_v1_coco_2017_11_17.tar.gz',
+        member='ssd_mobilenet_v1_coco_2017_11_17/frozen_inference_graph.pb',
+        sha='9e4bcdd98f4c6572747679e4ce570de4f03a70e2',
+        filename='ssd_mobilenet_v1_coco_2017_11_17.pb'),
+    Model(
+        name='MobileNet-SSD v2 (TensorFlow)',
+        url='http://download.tensorflow.org/models/object_detection/ssd_mobilenet_v2_coco_2018_03_29.tar.gz',
+        sha='69c93d29e292bc9682396a5c78355b1dfe481b61',
+        filename='ssd_mobilenet_v2_coco_2018_03_29.tar.gz'),
+    Model(
+        name='MobileNet-SSD v2 (TensorFlow)',
+        archive='ssd_mobilenet_v2_coco_2018_03_29.tar.gz',
+        member='ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb',
+        sha='35d571ac314f1d32ae678a857f87cc0ef6b220e8',
+        filename='ssd_mobilenet_v2_coco_2018_03_29.pb'),
     Model(
         name='Colorization',
         url='https://raw.githubusercontent.com/richzhang/colorization/master/models/colorization_deploy_v2.prototxt',
@@ -284,6 +306,28 @@ models = [
         url='https://pjreddie.com/media/files/yolov3.weights',
         sha='520878f12e97cf820529daea502acca380f1cb8e',
         filename='yolov3.weights'),
+    Model(
+        name='EAST',  # https://github.com/argman/EAST (a TensorFlow model), https://arxiv.org/abs/1704.03155v2 (a paper)
+        url='https://www.dropbox.com/s/r2ingd0l3zt8hxs/frozen_east_text_detection.tar.gz?dl=1',
+        sha='3ca8233d6edd748f7ed23246c8ca24cbf696bb94',
+        filename='frozen_east_text_detection.tar.gz'),
+    Model(
+        name='EAST',
+        archive='frozen_east_text_detection.tar.gz',
+        member='frozen_east_text_detection.pb',
+        sha='fffabf5ac36f37bddf68e34e84b45f5c4247ed06',
+        filename='frozen_east_text_detection.pb'),
+    Model(
+        name='Faster-RCNN, InveptionV2 (TensorFlow)',
+        url='http://download.tensorflow.org/models/object_detection/faster_rcnn_inception_v2_coco_2018_01_28.tar.gz',
+        sha='c710f25e5c6a3ce85fe793d5bf266d581ab1c230',
+        filename='faster_rcnn_inception_v2_coco_2018_01_28.tar.gz'),
+    Model(
+        name='Faster-RCNN, InveptionV2 (TensorFlow)',
+        archive='faster_rcnn_inception_v2_coco_2018_01_28.tar.gz',
+        member='faster_rcnn_inception_v2_coco_2018_01_28/frozen_inference_graph.pb',
+        sha='f2e4bf386b9bb3e25ddfcbbd382c20f417e444f3',
+        filename='faster_rcnn_inception_v2_coco_2018_01_28.pb'),
 ]
 
 # Note: models will be downloaded to current working directory
