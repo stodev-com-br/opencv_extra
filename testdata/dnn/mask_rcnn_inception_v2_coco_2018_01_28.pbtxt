@@ -28,10 +28,22 @@ node {
   }
 }
 node {
+  name: "Preprocessor/mul"
+  op: "Mul"
+  input: "image_tensor"
+  input: "Preprocessor/mul/x"
+}
+node {
+  name: "Preprocessor/sub"
+  op: "Sub"
+  input: "Preprocessor/mul"
+  input: "Preprocessor/sub/y"
+}
+node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Conv2d_1a_7x7/separable_conv2d/depthwise"
   op: "DepthwiseConv2dNative"
-  input: "image_tensor"
-  input: "FirstStageFeatureExtractor/InceptionV2/Conv2d_1a_7x7/depthwise_weights/read/_58__cf__64"
+  input: "Preprocessor/sub"
+  input: "FirstStageFeatureExtractor/InceptionV2/Conv2d_1a_7x7/depthwise_weights"
   input: "^FirstStageFeatureExtractor/Assert/Assert"
   attr {
     key: "data_format"
@@ -72,7 +84,7 @@ node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Conv2d_1a_7x7/separable_conv2d"
   op: "Conv2D"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Conv2d_1a_7x7/separable_conv2d/depthwise"
-  input: "FirstStageFeatureExtractor/InceptionV2/Conv2d_1a_7x7/pointwise_weights/read/_57__cf__63"
+  input: "FirstStageFeatureExtractor/InceptionV2/Conv2d_1a_7x7/pointwise_weights"
   attr {
     key: "data_format"
     value {
@@ -110,9 +122,24 @@ node {
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Conv2d_1a_7x7/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Conv2d_1a_7x7/separable_conv2d"
-  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Conv2d_1a_7x7/separable_conv2d_bn_offset"
+  input: "FirstStageFeatureExtractor/InceptionV2/Conv2d_1a_7x7/BatchNorm/gamma"
+  input: "FirstStageFeatureExtractor/InceptionV2/Conv2d_1a_7x7/BatchNorm/beta"
+  input: "FirstStageFeatureExtractor/InceptionV2/Conv2d_1a_7x7/BatchNorm/moving_mean"
+  input: "FirstStageFeatureExtractor/InceptionV2/Conv2d_1a_7x7/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Conv2d_1a_7x7/Relu"
@@ -162,7 +189,7 @@ node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Conv2d_2b_1x1/Conv2D"
   op: "Conv2D"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/MaxPool_2a_3x3/MaxPool"
-  input: "FirstStageFeatureExtractor/InceptionV2/Conv2d_2b_1x1/weights/read/_52__cf__58"
+  input: "FirstStageFeatureExtractor/InceptionV2/Conv2d_2b_1x1/weights"
   attr {
     key: "data_format"
     value {
@@ -200,9 +227,24 @@ node {
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Conv2d_2b_1x1/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Conv2d_2b_1x1/Conv2D"
-  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Conv2d_2b_1x1/Conv2D_bn_offset"
+  input: "FirstStageFeatureExtractor/InceptionV2/Conv2d_2b_1x1/BatchNorm/gamma"
+  input: "FirstStageFeatureExtractor/InceptionV2/Conv2d_2b_1x1/BatchNorm/beta"
+  input: "FirstStageFeatureExtractor/InceptionV2/Conv2d_2b_1x1/BatchNorm/moving_mean"
+  input: "FirstStageFeatureExtractor/InceptionV2/Conv2d_2b_1x1/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Conv2d_2b_1x1/Relu"
@@ -213,7 +255,7 @@ node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Conv2d_2c_3x3/Conv2D"
   op: "Conv2D"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Conv2d_2b_1x1/Relu"
-  input: "FirstStageFeatureExtractor/InceptionV2/Conv2d_2c_3x3/weights/read/_47__cf__53"
+  input: "FirstStageFeatureExtractor/InceptionV2/Conv2d_2c_3x3/weights"
   attr {
     key: "data_format"
     value {
@@ -251,9 +293,24 @@ node {
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Conv2d_2c_3x3/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Conv2d_2c_3x3/Conv2D"
-  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Conv2d_2c_3x3/Conv2D_bn_offset"
+  input: "FirstStageFeatureExtractor/InceptionV2/Conv2d_2c_3x3/BatchNorm/gamma"
+  input: "FirstStageFeatureExtractor/InceptionV2/Conv2d_2c_3x3/BatchNorm/beta"
+  input: "FirstStageFeatureExtractor/InceptionV2/Conv2d_2c_3x3/BatchNorm/moving_mean"
+  input: "FirstStageFeatureExtractor/InceptionV2/Conv2d_2c_3x3/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Conv2d_2c_3x3/Relu"
@@ -303,7 +360,7 @@ node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3b/Branch_0/Conv2d_0a_1x1/Conv2D"
   op: "Conv2D"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/MaxPool_3a_3x3/MaxPool"
-  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3b/Branch_0/Conv2d_0a_1x1/weights/read/_88__cf__94"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3b/Branch_0/Conv2d_0a_1x1/weights"
   attr {
     key: "data_format"
     value {
@@ -341,9 +398,24 @@ node {
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3b/Branch_0/Conv2d_0a_1x1/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3b/Branch_0/Conv2d_0a_1x1/Conv2D"
-  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3b/Branch_0/Conv2d_0a_1x1/Conv2D_bn_offset"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3b/Branch_0/Conv2d_0a_1x1/BatchNorm/gamma"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3b/Branch_0/Conv2d_0a_1x1/BatchNorm/beta"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3b/Branch_0/Conv2d_0a_1x1/BatchNorm/moving_mean"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3b/Branch_0/Conv2d_0a_1x1/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3b/Branch_0/Conv2d_0a_1x1/Relu"
@@ -354,7 +426,7 @@ node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3b/Branch_1/Conv2d_0a_1x1/Conv2D"
   op: "Conv2D"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/MaxPool_3a_3x3/MaxPool"
-  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3b/Branch_1/Conv2d_0a_1x1/weights/read/_83__cf__89"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3b/Branch_1/Conv2d_0a_1x1/weights"
   attr {
     key: "data_format"
     value {
@@ -392,9 +464,24 @@ node {
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3b/Branch_1/Conv2d_0a_1x1/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3b/Branch_1/Conv2d_0a_1x1/Conv2D"
-  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3b/Branch_1/Conv2d_0a_1x1/Conv2D_bn_offset"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3b/Branch_1/Conv2d_0a_1x1/BatchNorm/gamma"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3b/Branch_1/Conv2d_0a_1x1/BatchNorm/beta"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3b/Branch_1/Conv2d_0a_1x1/BatchNorm/moving_mean"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3b/Branch_1/Conv2d_0a_1x1/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3b/Branch_1/Conv2d_0a_1x1/Relu"
@@ -405,7 +492,7 @@ node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3b/Branch_1/Conv2d_0b_3x3/Conv2D"
   op: "Conv2D"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3b/Branch_1/Conv2d_0a_1x1/Relu"
-  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3b/Branch_1/Conv2d_0b_3x3/weights/read/_78__cf__84"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3b/Branch_1/Conv2d_0b_3x3/weights"
   attr {
     key: "data_format"
     value {
@@ -443,9 +530,24 @@ node {
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3b/Branch_1/Conv2d_0b_3x3/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3b/Branch_1/Conv2d_0b_3x3/Conv2D"
-  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3b/Branch_1/Conv2d_0b_3x3/Conv2D_bn_offset"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3b/Branch_1/Conv2d_0b_3x3/BatchNorm/gamma"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3b/Branch_1/Conv2d_0b_3x3/BatchNorm/beta"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3b/Branch_1/Conv2d_0b_3x3/BatchNorm/moving_mean"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3b/Branch_1/Conv2d_0b_3x3/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3b/Branch_1/Conv2d_0b_3x3/Relu"
@@ -456,7 +558,7 @@ node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3b/Branch_2/Conv2d_0a_1x1/Conv2D"
   op: "Conv2D"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/MaxPool_3a_3x3/MaxPool"
-  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3b/Branch_2/Conv2d_0a_1x1/weights/read/_73__cf__79"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3b/Branch_2/Conv2d_0a_1x1/weights"
   attr {
     key: "data_format"
     value {
@@ -494,9 +596,24 @@ node {
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3b/Branch_2/Conv2d_0a_1x1/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3b/Branch_2/Conv2d_0a_1x1/Conv2D"
-  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3b/Branch_2/Conv2d_0a_1x1/Conv2D_bn_offset"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3b/Branch_2/Conv2d_0a_1x1/BatchNorm/gamma"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3b/Branch_2/Conv2d_0a_1x1/BatchNorm/beta"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3b/Branch_2/Conv2d_0a_1x1/BatchNorm/moving_mean"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3b/Branch_2/Conv2d_0a_1x1/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3b/Branch_2/Conv2d_0a_1x1/Relu"
@@ -507,7 +624,7 @@ node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3b/Branch_2/Conv2d_0b_3x3/Conv2D"
   op: "Conv2D"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3b/Branch_2/Conv2d_0a_1x1/Relu"
-  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3b/Branch_2/Conv2d_0b_3x3/weights/read/_68__cf__74"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3b/Branch_2/Conv2d_0b_3x3/weights"
   attr {
     key: "data_format"
     value {
@@ -545,9 +662,24 @@ node {
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3b/Branch_2/Conv2d_0b_3x3/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3b/Branch_2/Conv2d_0b_3x3/Conv2D"
-  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3b/Branch_2/Conv2d_0b_3x3/Conv2D_bn_offset"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3b/Branch_2/Conv2d_0b_3x3/BatchNorm/gamma"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3b/Branch_2/Conv2d_0b_3x3/BatchNorm/beta"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3b/Branch_2/Conv2d_0b_3x3/BatchNorm/moving_mean"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3b/Branch_2/Conv2d_0b_3x3/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3b/Branch_2/Conv2d_0b_3x3/Relu"
@@ -558,7 +690,7 @@ node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3b/Branch_2/Conv2d_0c_3x3/Conv2D"
   op: "Conv2D"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3b/Branch_2/Conv2d_0b_3x3/Relu"
-  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3b/Branch_2/Conv2d_0c_3x3/weights/read/_63__cf__69"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3b/Branch_2/Conv2d_0c_3x3/weights"
   attr {
     key: "data_format"
     value {
@@ -596,9 +728,24 @@ node {
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3b/Branch_2/Conv2d_0c_3x3/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3b/Branch_2/Conv2d_0c_3x3/Conv2D"
-  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3b/Branch_2/Conv2d_0c_3x3/Conv2D_bn_offset"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3b/Branch_2/Conv2d_0c_3x3/BatchNorm/gamma"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3b/Branch_2/Conv2d_0c_3x3/BatchNorm/beta"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3b/Branch_2/Conv2d_0c_3x3/BatchNorm/moving_mean"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3b/Branch_2/Conv2d_0c_3x3/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3b/Branch_2/Conv2d_0c_3x3/Relu"
@@ -648,7 +795,7 @@ node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3b/Branch_3/Conv2d_0b_1x1/Conv2D"
   op: "Conv2D"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3b/Branch_3/AvgPool_0a_3x3/AvgPool"
-  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3b/Branch_3/Conv2d_0b_1x1/weights/read/_42__cf__48"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3b/Branch_3/Conv2d_0b_1x1/weights"
   attr {
     key: "data_format"
     value {
@@ -686,9 +833,24 @@ node {
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3b/Branch_3/Conv2d_0b_1x1/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3b/Branch_3/Conv2d_0b_1x1/Conv2D"
-  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3b/Branch_3/Conv2d_0b_1x1/Conv2D_bn_offset"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3b/Branch_3/Conv2d_0b_1x1/BatchNorm/gamma"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3b/Branch_3/Conv2d_0b_1x1/BatchNorm/beta"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3b/Branch_3/Conv2d_0b_1x1/BatchNorm/moving_mean"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3b/Branch_3/Conv2d_0b_1x1/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3b/Branch_3/Conv2d_0b_1x1/Relu"
@@ -708,7 +870,7 @@ node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3c/Branch_0/Conv2d_0a_1x1/Conv2D"
   op: "Conv2D"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3b/concat"
-  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3c/Branch_0/Conv2d_0a_1x1/weights/read/_118__cf__124"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3c/Branch_0/Conv2d_0a_1x1/weights"
   attr {
     key: "data_format"
     value {
@@ -746,9 +908,24 @@ node {
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3c/Branch_0/Conv2d_0a_1x1/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3c/Branch_0/Conv2d_0a_1x1/Conv2D"
-  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3c/Branch_0/Conv2d_0a_1x1/Conv2D_bn_offset"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3c/Branch_0/Conv2d_0a_1x1/BatchNorm/gamma"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3c/Branch_0/Conv2d_0a_1x1/BatchNorm/beta"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3c/Branch_0/Conv2d_0a_1x1/BatchNorm/moving_mean"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3c/Branch_0/Conv2d_0a_1x1/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3c/Branch_0/Conv2d_0a_1x1/Relu"
@@ -759,7 +936,7 @@ node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3c/Branch_1/Conv2d_0a_1x1/Conv2D"
   op: "Conv2D"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3b/concat"
-  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3c/Branch_1/Conv2d_0a_1x1/weights/read/_113__cf__119"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3c/Branch_1/Conv2d_0a_1x1/weights"
   attr {
     key: "data_format"
     value {
@@ -797,9 +974,24 @@ node {
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3c/Branch_1/Conv2d_0a_1x1/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3c/Branch_1/Conv2d_0a_1x1/Conv2D"
-  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3c/Branch_1/Conv2d_0a_1x1/Conv2D_bn_offset"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3c/Branch_1/Conv2d_0a_1x1/BatchNorm/gamma"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3c/Branch_1/Conv2d_0a_1x1/BatchNorm/beta"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3c/Branch_1/Conv2d_0a_1x1/BatchNorm/moving_mean"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3c/Branch_1/Conv2d_0a_1x1/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3c/Branch_1/Conv2d_0a_1x1/Relu"
@@ -810,7 +1002,7 @@ node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3c/Branch_1/Conv2d_0b_3x3/Conv2D"
   op: "Conv2D"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3c/Branch_1/Conv2d_0a_1x1/Relu"
-  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3c/Branch_1/Conv2d_0b_3x3/weights/read/_108__cf__114"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3c/Branch_1/Conv2d_0b_3x3/weights"
   attr {
     key: "data_format"
     value {
@@ -848,9 +1040,24 @@ node {
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3c/Branch_1/Conv2d_0b_3x3/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3c/Branch_1/Conv2d_0b_3x3/Conv2D"
-  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3c/Branch_1/Conv2d_0b_3x3/Conv2D_bn_offset"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3c/Branch_1/Conv2d_0b_3x3/BatchNorm/gamma"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3c/Branch_1/Conv2d_0b_3x3/BatchNorm/beta"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3c/Branch_1/Conv2d_0b_3x3/BatchNorm/moving_mean"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3c/Branch_1/Conv2d_0b_3x3/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3c/Branch_1/Conv2d_0b_3x3/Relu"
@@ -861,7 +1068,7 @@ node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3c/Branch_2/Conv2d_0a_1x1/Conv2D"
   op: "Conv2D"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3b/concat"
-  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3c/Branch_2/Conv2d_0a_1x1/weights/read/_103__cf__109"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3c/Branch_2/Conv2d_0a_1x1/weights"
   attr {
     key: "data_format"
     value {
@@ -899,9 +1106,24 @@ node {
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3c/Branch_2/Conv2d_0a_1x1/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3c/Branch_2/Conv2d_0a_1x1/Conv2D"
-  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3c/Branch_2/Conv2d_0a_1x1/Conv2D_bn_offset"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3c/Branch_2/Conv2d_0a_1x1/BatchNorm/gamma"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3c/Branch_2/Conv2d_0a_1x1/BatchNorm/beta"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3c/Branch_2/Conv2d_0a_1x1/BatchNorm/moving_mean"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3c/Branch_2/Conv2d_0a_1x1/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3c/Branch_2/Conv2d_0a_1x1/Relu"
@@ -912,7 +1134,7 @@ node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3c/Branch_2/Conv2d_0b_3x3/Conv2D"
   op: "Conv2D"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3c/Branch_2/Conv2d_0a_1x1/Relu"
-  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3c/Branch_2/Conv2d_0b_3x3/weights/read/_98__cf__104"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3c/Branch_2/Conv2d_0b_3x3/weights"
   attr {
     key: "data_format"
     value {
@@ -950,9 +1172,24 @@ node {
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3c/Branch_2/Conv2d_0b_3x3/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3c/Branch_2/Conv2d_0b_3x3/Conv2D"
-  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3c/Branch_2/Conv2d_0b_3x3/Conv2D_bn_offset"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3c/Branch_2/Conv2d_0b_3x3/BatchNorm/gamma"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3c/Branch_2/Conv2d_0b_3x3/BatchNorm/beta"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3c/Branch_2/Conv2d_0b_3x3/BatchNorm/moving_mean"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3c/Branch_2/Conv2d_0b_3x3/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3c/Branch_2/Conv2d_0b_3x3/Relu"
@@ -963,7 +1200,7 @@ node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3c/Branch_2/Conv2d_0c_3x3/Conv2D"
   op: "Conv2D"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3c/Branch_2/Conv2d_0b_3x3/Relu"
-  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3c/Branch_2/Conv2d_0c_3x3/weights/read/_93__cf__99"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3c/Branch_2/Conv2d_0c_3x3/weights"
   attr {
     key: "data_format"
     value {
@@ -1001,9 +1238,24 @@ node {
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3c/Branch_2/Conv2d_0c_3x3/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3c/Branch_2/Conv2d_0c_3x3/Conv2D"
-  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3c/Branch_2/Conv2d_0c_3x3/Conv2D_bn_offset"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3c/Branch_2/Conv2d_0c_3x3/BatchNorm/gamma"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3c/Branch_2/Conv2d_0c_3x3/BatchNorm/beta"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3c/Branch_2/Conv2d_0c_3x3/BatchNorm/moving_mean"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3c/Branch_2/Conv2d_0c_3x3/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3c/Branch_2/Conv2d_0c_3x3/Relu"
@@ -1053,7 +1305,7 @@ node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3c/Branch_3/Conv2d_0b_1x1/Conv2D"
   op: "Conv2D"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3c/Branch_3/AvgPool_0a_3x3/AvgPool"
-  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3c/Branch_3/Conv2d_0b_1x1/weights/read/_37__cf__43"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3c/Branch_3/Conv2d_0b_1x1/weights"
   attr {
     key: "data_format"
     value {
@@ -1091,9 +1343,24 @@ node {
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3c/Branch_3/Conv2d_0b_1x1/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3c/Branch_3/Conv2d_0b_1x1/Conv2D"
-  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3c/Branch_3/Conv2d_0b_1x1/Conv2D_bn_offset"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3c/Branch_3/Conv2d_0b_1x1/BatchNorm/gamma"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3c/Branch_3/Conv2d_0b_1x1/BatchNorm/beta"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3c/Branch_3/Conv2d_0b_1x1/BatchNorm/moving_mean"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_3c/Branch_3/Conv2d_0b_1x1/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3c/Branch_3/Conv2d_0b_1x1/Relu"
@@ -1113,7 +1380,7 @@ node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4a/Branch_0/Conv2d_0a_1x1/Conv2D"
   op: "Conv2D"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3c/concat"
-  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4a/Branch_0/Conv2d_0a_1x1/weights/read/_143__cf__149"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4a/Branch_0/Conv2d_0a_1x1/weights"
   attr {
     key: "data_format"
     value {
@@ -1151,9 +1418,24 @@ node {
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4a/Branch_0/Conv2d_0a_1x1/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4a/Branch_0/Conv2d_0a_1x1/Conv2D"
-  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4a/Branch_0/Conv2d_0a_1x1/Conv2D_bn_offset"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4a/Branch_0/Conv2d_0a_1x1/BatchNorm/gamma"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4a/Branch_0/Conv2d_0a_1x1/BatchNorm/beta"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4a/Branch_0/Conv2d_0a_1x1/BatchNorm/moving_mean"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4a/Branch_0/Conv2d_0a_1x1/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4a/Branch_0/Conv2d_0a_1x1/Relu"
@@ -1164,7 +1446,7 @@ node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4a/Branch_0/Conv2d_1a_3x3/Conv2D"
   op: "Conv2D"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4a/Branch_0/Conv2d_0a_1x1/Relu"
-  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4a/Branch_0/Conv2d_1a_3x3/weights/read/_138__cf__144"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4a/Branch_0/Conv2d_1a_3x3/weights"
   attr {
     key: "data_format"
     value {
@@ -1202,9 +1484,24 @@ node {
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4a/Branch_0/Conv2d_1a_3x3/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4a/Branch_0/Conv2d_1a_3x3/Conv2D"
-  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4a/Branch_0/Conv2d_1a_3x3/Conv2D_bn_offset"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4a/Branch_0/Conv2d_1a_3x3/BatchNorm/gamma"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4a/Branch_0/Conv2d_1a_3x3/BatchNorm/beta"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4a/Branch_0/Conv2d_1a_3x3/BatchNorm/moving_mean"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4a/Branch_0/Conv2d_1a_3x3/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4a/Branch_0/Conv2d_1a_3x3/Relu"
@@ -1215,7 +1512,7 @@ node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4a/Branch_1/Conv2d_0a_1x1/Conv2D"
   op: "Conv2D"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_3c/concat"
-  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4a/Branch_1/Conv2d_0a_1x1/weights/read/_133__cf__139"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4a/Branch_1/Conv2d_0a_1x1/weights"
   attr {
     key: "data_format"
     value {
@@ -1253,9 +1550,24 @@ node {
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4a/Branch_1/Conv2d_0a_1x1/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4a/Branch_1/Conv2d_0a_1x1/Conv2D"
-  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4a/Branch_1/Conv2d_0a_1x1/Conv2D_bn_offset"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4a/Branch_1/Conv2d_0a_1x1/BatchNorm/gamma"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4a/Branch_1/Conv2d_0a_1x1/BatchNorm/beta"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4a/Branch_1/Conv2d_0a_1x1/BatchNorm/moving_mean"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4a/Branch_1/Conv2d_0a_1x1/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4a/Branch_1/Conv2d_0a_1x1/Relu"
@@ -1266,7 +1578,7 @@ node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4a/Branch_1/Conv2d_0b_3x3/Conv2D"
   op: "Conv2D"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4a/Branch_1/Conv2d_0a_1x1/Relu"
-  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4a/Branch_1/Conv2d_0b_3x3/weights/read/_128__cf__134"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4a/Branch_1/Conv2d_0b_3x3/weights"
   attr {
     key: "data_format"
     value {
@@ -1304,9 +1616,24 @@ node {
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4a/Branch_1/Conv2d_0b_3x3/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4a/Branch_1/Conv2d_0b_3x3/Conv2D"
-  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4a/Branch_1/Conv2d_0b_3x3/Conv2D_bn_offset"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4a/Branch_1/Conv2d_0b_3x3/BatchNorm/gamma"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4a/Branch_1/Conv2d_0b_3x3/BatchNorm/beta"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4a/Branch_1/Conv2d_0b_3x3/BatchNorm/moving_mean"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4a/Branch_1/Conv2d_0b_3x3/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4a/Branch_1/Conv2d_0b_3x3/Relu"
@@ -1317,7 +1644,7 @@ node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4a/Branch_1/Conv2d_1a_3x3/Conv2D"
   op: "Conv2D"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4a/Branch_1/Conv2d_0b_3x3/Relu"
-  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4a/Branch_1/Conv2d_1a_3x3/weights/read/_123__cf__129"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4a/Branch_1/Conv2d_1a_3x3/weights"
   attr {
     key: "data_format"
     value {
@@ -1355,9 +1682,24 @@ node {
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4a/Branch_1/Conv2d_1a_3x3/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4a/Branch_1/Conv2d_1a_3x3/Conv2D"
-  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4a/Branch_1/Conv2d_1a_3x3/Conv2D_bn_offset"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4a/Branch_1/Conv2d_1a_3x3/BatchNorm/gamma"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4a/Branch_1/Conv2d_1a_3x3/BatchNorm/beta"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4a/Branch_1/Conv2d_1a_3x3/BatchNorm/moving_mean"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4a/Branch_1/Conv2d_1a_3x3/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4a/Branch_1/Conv2d_1a_3x3/Relu"
@@ -1415,7 +1757,7 @@ node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4b/Branch_0/Conv2d_0a_1x1/Conv2D"
   op: "Conv2D"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4a/concat"
-  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4b/Branch_0/Conv2d_0a_1x1/weights/read/_173__cf__179"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4b/Branch_0/Conv2d_0a_1x1/weights"
   attr {
     key: "data_format"
     value {
@@ -1453,9 +1795,24 @@ node {
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4b/Branch_0/Conv2d_0a_1x1/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4b/Branch_0/Conv2d_0a_1x1/Conv2D"
-  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4b/Branch_0/Conv2d_0a_1x1/Conv2D_bn_offset"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4b/Branch_0/Conv2d_0a_1x1/BatchNorm/gamma"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4b/Branch_0/Conv2d_0a_1x1/BatchNorm/beta"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4b/Branch_0/Conv2d_0a_1x1/BatchNorm/moving_mean"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4b/Branch_0/Conv2d_0a_1x1/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4b/Branch_0/Conv2d_0a_1x1/Relu"
@@ -1466,7 +1823,7 @@ node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4b/Branch_1/Conv2d_0a_1x1/Conv2D"
   op: "Conv2D"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4a/concat"
-  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4b/Branch_1/Conv2d_0a_1x1/weights/read/_168__cf__174"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4b/Branch_1/Conv2d_0a_1x1/weights"
   attr {
     key: "data_format"
     value {
@@ -1504,9 +1861,24 @@ node {
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4b/Branch_1/Conv2d_0a_1x1/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4b/Branch_1/Conv2d_0a_1x1/Conv2D"
-  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4b/Branch_1/Conv2d_0a_1x1/Conv2D_bn_offset"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4b/Branch_1/Conv2d_0a_1x1/BatchNorm/gamma"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4b/Branch_1/Conv2d_0a_1x1/BatchNorm/beta"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4b/Branch_1/Conv2d_0a_1x1/BatchNorm/moving_mean"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4b/Branch_1/Conv2d_0a_1x1/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4b/Branch_1/Conv2d_0a_1x1/Relu"
@@ -1517,7 +1889,7 @@ node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4b/Branch_1/Conv2d_0b_3x3/Conv2D"
   op: "Conv2D"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4b/Branch_1/Conv2d_0a_1x1/Relu"
-  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4b/Branch_1/Conv2d_0b_3x3/weights/read/_163__cf__169"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4b/Branch_1/Conv2d_0b_3x3/weights"
   attr {
     key: "data_format"
     value {
@@ -1555,9 +1927,24 @@ node {
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4b/Branch_1/Conv2d_0b_3x3/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4b/Branch_1/Conv2d_0b_3x3/Conv2D"
-  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4b/Branch_1/Conv2d_0b_3x3/Conv2D_bn_offset"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4b/Branch_1/Conv2d_0b_3x3/BatchNorm/gamma"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4b/Branch_1/Conv2d_0b_3x3/BatchNorm/beta"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4b/Branch_1/Conv2d_0b_3x3/BatchNorm/moving_mean"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4b/Branch_1/Conv2d_0b_3x3/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4b/Branch_1/Conv2d_0b_3x3/Relu"
@@ -1568,7 +1955,7 @@ node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4b/Branch_2/Conv2d_0a_1x1/Conv2D"
   op: "Conv2D"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4a/concat"
-  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4b/Branch_2/Conv2d_0a_1x1/weights/read/_158__cf__164"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4b/Branch_2/Conv2d_0a_1x1/weights"
   attr {
     key: "data_format"
     value {
@@ -1606,9 +1993,24 @@ node {
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4b/Branch_2/Conv2d_0a_1x1/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4b/Branch_2/Conv2d_0a_1x1/Conv2D"
-  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4b/Branch_2/Conv2d_0a_1x1/Conv2D_bn_offset"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4b/Branch_2/Conv2d_0a_1x1/BatchNorm/gamma"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4b/Branch_2/Conv2d_0a_1x1/BatchNorm/beta"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4b/Branch_2/Conv2d_0a_1x1/BatchNorm/moving_mean"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4b/Branch_2/Conv2d_0a_1x1/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4b/Branch_2/Conv2d_0a_1x1/Relu"
@@ -1619,7 +2021,7 @@ node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4b/Branch_2/Conv2d_0b_3x3/Conv2D"
   op: "Conv2D"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4b/Branch_2/Conv2d_0a_1x1/Relu"
-  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4b/Branch_2/Conv2d_0b_3x3/weights/read/_153__cf__159"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4b/Branch_2/Conv2d_0b_3x3/weights"
   attr {
     key: "data_format"
     value {
@@ -1657,9 +2059,24 @@ node {
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4b/Branch_2/Conv2d_0b_3x3/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4b/Branch_2/Conv2d_0b_3x3/Conv2D"
-  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4b/Branch_2/Conv2d_0b_3x3/Conv2D_bn_offset"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4b/Branch_2/Conv2d_0b_3x3/BatchNorm/gamma"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4b/Branch_2/Conv2d_0b_3x3/BatchNorm/beta"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4b/Branch_2/Conv2d_0b_3x3/BatchNorm/moving_mean"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4b/Branch_2/Conv2d_0b_3x3/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4b/Branch_2/Conv2d_0b_3x3/Relu"
@@ -1670,7 +2087,7 @@ node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4b/Branch_2/Conv2d_0c_3x3/Conv2D"
   op: "Conv2D"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4b/Branch_2/Conv2d_0b_3x3/Relu"
-  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4b/Branch_2/Conv2d_0c_3x3/weights/read/_148__cf__154"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4b/Branch_2/Conv2d_0c_3x3/weights"
   attr {
     key: "data_format"
     value {
@@ -1708,9 +2125,24 @@ node {
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4b/Branch_2/Conv2d_0c_3x3/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4b/Branch_2/Conv2d_0c_3x3/Conv2D"
-  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4b/Branch_2/Conv2d_0c_3x3/Conv2D_bn_offset"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4b/Branch_2/Conv2d_0c_3x3/BatchNorm/gamma"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4b/Branch_2/Conv2d_0c_3x3/BatchNorm/beta"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4b/Branch_2/Conv2d_0c_3x3/BatchNorm/moving_mean"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4b/Branch_2/Conv2d_0c_3x3/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4b/Branch_2/Conv2d_0c_3x3/Relu"
@@ -1760,7 +2192,7 @@ node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4b/Branch_3/Conv2d_0b_1x1/Conv2D"
   op: "Conv2D"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4b/Branch_3/AvgPool_0a_3x3/AvgPool"
-  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4b/Branch_3/Conv2d_0b_1x1/weights/read/_32__cf__38"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4b/Branch_3/Conv2d_0b_1x1/weights"
   attr {
     key: "data_format"
     value {
@@ -1798,9 +2230,24 @@ node {
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4b/Branch_3/Conv2d_0b_1x1/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4b/Branch_3/Conv2d_0b_1x1/Conv2D"
-  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4b/Branch_3/Conv2d_0b_1x1/Conv2D_bn_offset"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4b/Branch_3/Conv2d_0b_1x1/BatchNorm/gamma"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4b/Branch_3/Conv2d_0b_1x1/BatchNorm/beta"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4b/Branch_3/Conv2d_0b_1x1/BatchNorm/moving_mean"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4b/Branch_3/Conv2d_0b_1x1/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4b/Branch_3/Conv2d_0b_1x1/Relu"
@@ -1820,7 +2267,7 @@ node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4c/Branch_0/Conv2d_0a_1x1/Conv2D"
   op: "Conv2D"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4b/concat"
-  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4c/Branch_0/Conv2d_0a_1x1/weights/read/_203__cf__209"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4c/Branch_0/Conv2d_0a_1x1/weights"
   attr {
     key: "data_format"
     value {
@@ -1858,9 +2305,24 @@ node {
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4c/Branch_0/Conv2d_0a_1x1/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4c/Branch_0/Conv2d_0a_1x1/Conv2D"
-  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4c/Branch_0/Conv2d_0a_1x1/Conv2D_bn_offset"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4c/Branch_0/Conv2d_0a_1x1/BatchNorm/gamma"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4c/Branch_0/Conv2d_0a_1x1/BatchNorm/beta"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4c/Branch_0/Conv2d_0a_1x1/BatchNorm/moving_mean"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4c/Branch_0/Conv2d_0a_1x1/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4c/Branch_0/Conv2d_0a_1x1/Relu"
@@ -1871,7 +2333,7 @@ node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4c/Branch_1/Conv2d_0a_1x1/Conv2D"
   op: "Conv2D"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4b/concat"
-  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4c/Branch_1/Conv2d_0a_1x1/weights/read/_198__cf__204"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4c/Branch_1/Conv2d_0a_1x1/weights"
   attr {
     key: "data_format"
     value {
@@ -1909,9 +2371,24 @@ node {
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4c/Branch_1/Conv2d_0a_1x1/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4c/Branch_1/Conv2d_0a_1x1/Conv2D"
-  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4c/Branch_1/Conv2d_0a_1x1/Conv2D_bn_offset"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4c/Branch_1/Conv2d_0a_1x1/BatchNorm/gamma"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4c/Branch_1/Conv2d_0a_1x1/BatchNorm/beta"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4c/Branch_1/Conv2d_0a_1x1/BatchNorm/moving_mean"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4c/Branch_1/Conv2d_0a_1x1/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4c/Branch_1/Conv2d_0a_1x1/Relu"
@@ -1922,7 +2399,7 @@ node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4c/Branch_1/Conv2d_0b_3x3/Conv2D"
   op: "Conv2D"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4c/Branch_1/Conv2d_0a_1x1/Relu"
-  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4c/Branch_1/Conv2d_0b_3x3/weights/read/_193__cf__199"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4c/Branch_1/Conv2d_0b_3x3/weights"
   attr {
     key: "data_format"
     value {
@@ -1960,9 +2437,24 @@ node {
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4c/Branch_1/Conv2d_0b_3x3/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4c/Branch_1/Conv2d_0b_3x3/Conv2D"
-  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4c/Branch_1/Conv2d_0b_3x3/Conv2D_bn_offset"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4c/Branch_1/Conv2d_0b_3x3/BatchNorm/gamma"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4c/Branch_1/Conv2d_0b_3x3/BatchNorm/beta"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4c/Branch_1/Conv2d_0b_3x3/BatchNorm/moving_mean"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4c/Branch_1/Conv2d_0b_3x3/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4c/Branch_1/Conv2d_0b_3x3/Relu"
@@ -1973,7 +2465,7 @@ node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4c/Branch_2/Conv2d_0a_1x1/Conv2D"
   op: "Conv2D"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4b/concat"
-  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4c/Branch_2/Conv2d_0a_1x1/weights/read/_188__cf__194"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4c/Branch_2/Conv2d_0a_1x1/weights"
   attr {
     key: "data_format"
     value {
@@ -2011,9 +2503,24 @@ node {
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4c/Branch_2/Conv2d_0a_1x1/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4c/Branch_2/Conv2d_0a_1x1/Conv2D"
-  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4c/Branch_2/Conv2d_0a_1x1/Conv2D_bn_offset"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4c/Branch_2/Conv2d_0a_1x1/BatchNorm/gamma"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4c/Branch_2/Conv2d_0a_1x1/BatchNorm/beta"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4c/Branch_2/Conv2d_0a_1x1/BatchNorm/moving_mean"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4c/Branch_2/Conv2d_0a_1x1/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4c/Branch_2/Conv2d_0a_1x1/Relu"
@@ -2024,7 +2531,7 @@ node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4c/Branch_2/Conv2d_0b_3x3/Conv2D"
   op: "Conv2D"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4c/Branch_2/Conv2d_0a_1x1/Relu"
-  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4c/Branch_2/Conv2d_0b_3x3/weights/read/_183__cf__189"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4c/Branch_2/Conv2d_0b_3x3/weights"
   attr {
     key: "data_format"
     value {
@@ -2062,9 +2569,24 @@ node {
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4c/Branch_2/Conv2d_0b_3x3/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4c/Branch_2/Conv2d_0b_3x3/Conv2D"
-  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4c/Branch_2/Conv2d_0b_3x3/Conv2D_bn_offset"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4c/Branch_2/Conv2d_0b_3x3/BatchNorm/gamma"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4c/Branch_2/Conv2d_0b_3x3/BatchNorm/beta"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4c/Branch_2/Conv2d_0b_3x3/BatchNorm/moving_mean"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4c/Branch_2/Conv2d_0b_3x3/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4c/Branch_2/Conv2d_0b_3x3/Relu"
@@ -2075,7 +2597,7 @@ node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4c/Branch_2/Conv2d_0c_3x3/Conv2D"
   op: "Conv2D"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4c/Branch_2/Conv2d_0b_3x3/Relu"
-  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4c/Branch_2/Conv2d_0c_3x3/weights/read/_178__cf__184"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4c/Branch_2/Conv2d_0c_3x3/weights"
   attr {
     key: "data_format"
     value {
@@ -2113,9 +2635,24 @@ node {
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4c/Branch_2/Conv2d_0c_3x3/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4c/Branch_2/Conv2d_0c_3x3/Conv2D"
-  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4c/Branch_2/Conv2d_0c_3x3/Conv2D_bn_offset"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4c/Branch_2/Conv2d_0c_3x3/BatchNorm/gamma"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4c/Branch_2/Conv2d_0c_3x3/BatchNorm/beta"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4c/Branch_2/Conv2d_0c_3x3/BatchNorm/moving_mean"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4c/Branch_2/Conv2d_0c_3x3/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4c/Branch_2/Conv2d_0c_3x3/Relu"
@@ -2165,7 +2702,7 @@ node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4c/Branch_3/Conv2d_0b_1x1/Conv2D"
   op: "Conv2D"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4c/Branch_3/AvgPool_0a_3x3/AvgPool"
-  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4c/Branch_3/Conv2d_0b_1x1/weights/read/_27__cf__33"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4c/Branch_3/Conv2d_0b_1x1/weights"
   attr {
     key: "data_format"
     value {
@@ -2203,9 +2740,24 @@ node {
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4c/Branch_3/Conv2d_0b_1x1/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4c/Branch_3/Conv2d_0b_1x1/Conv2D"
-  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4c/Branch_3/Conv2d_0b_1x1/Conv2D_bn_offset"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4c/Branch_3/Conv2d_0b_1x1/BatchNorm/gamma"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4c/Branch_3/Conv2d_0b_1x1/BatchNorm/beta"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4c/Branch_3/Conv2d_0b_1x1/BatchNorm/moving_mean"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4c/Branch_3/Conv2d_0b_1x1/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4c/Branch_3/Conv2d_0b_1x1/Relu"
@@ -2225,7 +2777,7 @@ node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4d/Branch_0/Conv2d_0a_1x1/Conv2D"
   op: "Conv2D"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4c/concat"
-  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4d/Branch_0/Conv2d_0a_1x1/weights/read/_233__cf__239"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4d/Branch_0/Conv2d_0a_1x1/weights"
   attr {
     key: "data_format"
     value {
@@ -2263,9 +2815,24 @@ node {
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4d/Branch_0/Conv2d_0a_1x1/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4d/Branch_0/Conv2d_0a_1x1/Conv2D"
-  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4d/Branch_0/Conv2d_0a_1x1/Conv2D_bn_offset"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4d/Branch_0/Conv2d_0a_1x1/BatchNorm/gamma"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4d/Branch_0/Conv2d_0a_1x1/BatchNorm/beta"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4d/Branch_0/Conv2d_0a_1x1/BatchNorm/moving_mean"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4d/Branch_0/Conv2d_0a_1x1/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4d/Branch_0/Conv2d_0a_1x1/Relu"
@@ -2276,7 +2843,7 @@ node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4d/Branch_1/Conv2d_0a_1x1/Conv2D"
   op: "Conv2D"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4c/concat"
-  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4d/Branch_1/Conv2d_0a_1x1/weights/read/_228__cf__234"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4d/Branch_1/Conv2d_0a_1x1/weights"
   attr {
     key: "data_format"
     value {
@@ -2314,9 +2881,24 @@ node {
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4d/Branch_1/Conv2d_0a_1x1/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4d/Branch_1/Conv2d_0a_1x1/Conv2D"
-  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4d/Branch_1/Conv2d_0a_1x1/Conv2D_bn_offset"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4d/Branch_1/Conv2d_0a_1x1/BatchNorm/gamma"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4d/Branch_1/Conv2d_0a_1x1/BatchNorm/beta"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4d/Branch_1/Conv2d_0a_1x1/BatchNorm/moving_mean"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4d/Branch_1/Conv2d_0a_1x1/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4d/Branch_1/Conv2d_0a_1x1/Relu"
@@ -2327,7 +2909,7 @@ node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4d/Branch_1/Conv2d_0b_3x3/Conv2D"
   op: "Conv2D"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4d/Branch_1/Conv2d_0a_1x1/Relu"
-  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4d/Branch_1/Conv2d_0b_3x3/weights/read/_223__cf__229"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4d/Branch_1/Conv2d_0b_3x3/weights"
   attr {
     key: "data_format"
     value {
@@ -2365,9 +2947,24 @@ node {
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4d/Branch_1/Conv2d_0b_3x3/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4d/Branch_1/Conv2d_0b_3x3/Conv2D"
-  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4d/Branch_1/Conv2d_0b_3x3/Conv2D_bn_offset"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4d/Branch_1/Conv2d_0b_3x3/BatchNorm/gamma"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4d/Branch_1/Conv2d_0b_3x3/BatchNorm/beta"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4d/Branch_1/Conv2d_0b_3x3/BatchNorm/moving_mean"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4d/Branch_1/Conv2d_0b_3x3/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4d/Branch_1/Conv2d_0b_3x3/Relu"
@@ -2378,7 +2975,7 @@ node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4d/Branch_2/Conv2d_0a_1x1/Conv2D"
   op: "Conv2D"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4c/concat"
-  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4d/Branch_2/Conv2d_0a_1x1/weights/read/_218__cf__224"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4d/Branch_2/Conv2d_0a_1x1/weights"
   attr {
     key: "data_format"
     value {
@@ -2416,9 +3013,24 @@ node {
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4d/Branch_2/Conv2d_0a_1x1/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4d/Branch_2/Conv2d_0a_1x1/Conv2D"
-  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4d/Branch_2/Conv2d_0a_1x1/Conv2D_bn_offset"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4d/Branch_2/Conv2d_0a_1x1/BatchNorm/gamma"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4d/Branch_2/Conv2d_0a_1x1/BatchNorm/beta"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4d/Branch_2/Conv2d_0a_1x1/BatchNorm/moving_mean"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4d/Branch_2/Conv2d_0a_1x1/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4d/Branch_2/Conv2d_0a_1x1/Relu"
@@ -2429,7 +3041,7 @@ node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4d/Branch_2/Conv2d_0b_3x3/Conv2D"
   op: "Conv2D"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4d/Branch_2/Conv2d_0a_1x1/Relu"
-  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4d/Branch_2/Conv2d_0b_3x3/weights/read/_213__cf__219"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4d/Branch_2/Conv2d_0b_3x3/weights"
   attr {
     key: "data_format"
     value {
@@ -2467,9 +3079,24 @@ node {
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4d/Branch_2/Conv2d_0b_3x3/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4d/Branch_2/Conv2d_0b_3x3/Conv2D"
-  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4d/Branch_2/Conv2d_0b_3x3/Conv2D_bn_offset"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4d/Branch_2/Conv2d_0b_3x3/BatchNorm/gamma"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4d/Branch_2/Conv2d_0b_3x3/BatchNorm/beta"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4d/Branch_2/Conv2d_0b_3x3/BatchNorm/moving_mean"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4d/Branch_2/Conv2d_0b_3x3/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4d/Branch_2/Conv2d_0b_3x3/Relu"
@@ -2480,7 +3107,7 @@ node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4d/Branch_2/Conv2d_0c_3x3/Conv2D"
   op: "Conv2D"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4d/Branch_2/Conv2d_0b_3x3/Relu"
-  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4d/Branch_2/Conv2d_0c_3x3/weights/read/_208__cf__214"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4d/Branch_2/Conv2d_0c_3x3/weights"
   attr {
     key: "data_format"
     value {
@@ -2518,9 +3145,24 @@ node {
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4d/Branch_2/Conv2d_0c_3x3/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4d/Branch_2/Conv2d_0c_3x3/Conv2D"
-  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4d/Branch_2/Conv2d_0c_3x3/Conv2D_bn_offset"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4d/Branch_2/Conv2d_0c_3x3/BatchNorm/gamma"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4d/Branch_2/Conv2d_0c_3x3/BatchNorm/beta"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4d/Branch_2/Conv2d_0c_3x3/BatchNorm/moving_mean"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4d/Branch_2/Conv2d_0c_3x3/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4d/Branch_2/Conv2d_0c_3x3/Relu"
@@ -2570,7 +3212,7 @@ node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4d/Branch_3/Conv2d_0b_1x1/Conv2D"
   op: "Conv2D"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4d/Branch_3/AvgPool_0a_3x3/AvgPool"
-  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4d/Branch_3/Conv2d_0b_1x1/weights/read/_22__cf__28"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4d/Branch_3/Conv2d_0b_1x1/weights"
   attr {
     key: "data_format"
     value {
@@ -2608,9 +3250,24 @@ node {
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4d/Branch_3/Conv2d_0b_1x1/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4d/Branch_3/Conv2d_0b_1x1/Conv2D"
-  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4d/Branch_3/Conv2d_0b_1x1/Conv2D_bn_offset"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4d/Branch_3/Conv2d_0b_1x1/BatchNorm/gamma"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4d/Branch_3/Conv2d_0b_1x1/BatchNorm/beta"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4d/Branch_3/Conv2d_0b_1x1/BatchNorm/moving_mean"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4d/Branch_3/Conv2d_0b_1x1/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4d/Branch_3/Conv2d_0b_1x1/Relu"
@@ -2630,7 +3287,7 @@ node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4e/Branch_0/Conv2d_0a_1x1/Conv2D"
   op: "Conv2D"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4d/concat"
-  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4e/Branch_0/Conv2d_0a_1x1/weights/read/_263__cf__269"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4e/Branch_0/Conv2d_0a_1x1/weights"
   attr {
     key: "data_format"
     value {
@@ -2668,9 +3325,24 @@ node {
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4e/Branch_0/Conv2d_0a_1x1/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4e/Branch_0/Conv2d_0a_1x1/Conv2D"
-  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4e/Branch_0/Conv2d_0a_1x1/Conv2D_bn_offset"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4e/Branch_0/Conv2d_0a_1x1/BatchNorm/gamma"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4e/Branch_0/Conv2d_0a_1x1/BatchNorm/beta"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4e/Branch_0/Conv2d_0a_1x1/BatchNorm/moving_mean"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4e/Branch_0/Conv2d_0a_1x1/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4e/Branch_0/Conv2d_0a_1x1/Relu"
@@ -2681,7 +3353,7 @@ node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4e/Branch_1/Conv2d_0a_1x1/Conv2D"
   op: "Conv2D"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4d/concat"
-  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4e/Branch_1/Conv2d_0a_1x1/weights/read/_258__cf__264"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4e/Branch_1/Conv2d_0a_1x1/weights"
   attr {
     key: "data_format"
     value {
@@ -2719,9 +3391,24 @@ node {
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4e/Branch_1/Conv2d_0a_1x1/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4e/Branch_1/Conv2d_0a_1x1/Conv2D"
-  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4e/Branch_1/Conv2d_0a_1x1/Conv2D_bn_offset"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4e/Branch_1/Conv2d_0a_1x1/BatchNorm/gamma"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4e/Branch_1/Conv2d_0a_1x1/BatchNorm/beta"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4e/Branch_1/Conv2d_0a_1x1/BatchNorm/moving_mean"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4e/Branch_1/Conv2d_0a_1x1/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4e/Branch_1/Conv2d_0a_1x1/Relu"
@@ -2732,7 +3419,7 @@ node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4e/Branch_1/Conv2d_0b_3x3/Conv2D"
   op: "Conv2D"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4e/Branch_1/Conv2d_0a_1x1/Relu"
-  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4e/Branch_1/Conv2d_0b_3x3/weights/read/_253__cf__259"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4e/Branch_1/Conv2d_0b_3x3/weights"
   attr {
     key: "data_format"
     value {
@@ -2770,9 +3457,24 @@ node {
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4e/Branch_1/Conv2d_0b_3x3/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4e/Branch_1/Conv2d_0b_3x3/Conv2D"
-  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4e/Branch_1/Conv2d_0b_3x3/Conv2D_bn_offset"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4e/Branch_1/Conv2d_0b_3x3/BatchNorm/gamma"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4e/Branch_1/Conv2d_0b_3x3/BatchNorm/beta"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4e/Branch_1/Conv2d_0b_3x3/BatchNorm/moving_mean"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4e/Branch_1/Conv2d_0b_3x3/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4e/Branch_1/Conv2d_0b_3x3/Relu"
@@ -2783,7 +3485,7 @@ node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4e/Branch_2/Conv2d_0a_1x1/Conv2D"
   op: "Conv2D"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4d/concat"
-  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4e/Branch_2/Conv2d_0a_1x1/weights/read/_248__cf__254"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4e/Branch_2/Conv2d_0a_1x1/weights"
   attr {
     key: "data_format"
     value {
@@ -2821,9 +3523,24 @@ node {
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4e/Branch_2/Conv2d_0a_1x1/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4e/Branch_2/Conv2d_0a_1x1/Conv2D"
-  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4e/Branch_2/Conv2d_0a_1x1/Conv2D_bn_offset"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4e/Branch_2/Conv2d_0a_1x1/BatchNorm/gamma"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4e/Branch_2/Conv2d_0a_1x1/BatchNorm/beta"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4e/Branch_2/Conv2d_0a_1x1/BatchNorm/moving_mean"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4e/Branch_2/Conv2d_0a_1x1/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4e/Branch_2/Conv2d_0a_1x1/Relu"
@@ -2834,7 +3551,7 @@ node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4e/Branch_2/Conv2d_0b_3x3/Conv2D"
   op: "Conv2D"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4e/Branch_2/Conv2d_0a_1x1/Relu"
-  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4e/Branch_2/Conv2d_0b_3x3/weights/read/_243__cf__249"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4e/Branch_2/Conv2d_0b_3x3/weights"
   attr {
     key: "data_format"
     value {
@@ -2872,9 +3589,24 @@ node {
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4e/Branch_2/Conv2d_0b_3x3/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4e/Branch_2/Conv2d_0b_3x3/Conv2D"
-  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4e/Branch_2/Conv2d_0b_3x3/Conv2D_bn_offset"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4e/Branch_2/Conv2d_0b_3x3/BatchNorm/gamma"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4e/Branch_2/Conv2d_0b_3x3/BatchNorm/beta"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4e/Branch_2/Conv2d_0b_3x3/BatchNorm/moving_mean"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4e/Branch_2/Conv2d_0b_3x3/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4e/Branch_2/Conv2d_0b_3x3/Relu"
@@ -2885,7 +3617,7 @@ node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4e/Branch_2/Conv2d_0c_3x3/Conv2D"
   op: "Conv2D"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4e/Branch_2/Conv2d_0b_3x3/Relu"
-  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4e/Branch_2/Conv2d_0c_3x3/weights/read/_238__cf__244"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4e/Branch_2/Conv2d_0c_3x3/weights"
   attr {
     key: "data_format"
     value {
@@ -2923,9 +3655,24 @@ node {
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4e/Branch_2/Conv2d_0c_3x3/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4e/Branch_2/Conv2d_0c_3x3/Conv2D"
-  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4e/Branch_2/Conv2d_0c_3x3/Conv2D_bn_offset"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4e/Branch_2/Conv2d_0c_3x3/BatchNorm/gamma"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4e/Branch_2/Conv2d_0c_3x3/BatchNorm/beta"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4e/Branch_2/Conv2d_0c_3x3/BatchNorm/moving_mean"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4e/Branch_2/Conv2d_0c_3x3/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4e/Branch_2/Conv2d_0c_3x3/Relu"
@@ -2975,7 +3722,7 @@ node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4e/Branch_3/Conv2d_0b_1x1/Conv2D"
   op: "Conv2D"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4e/Branch_3/AvgPool_0a_3x3/AvgPool"
-  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4e/Branch_3/Conv2d_0b_1x1/weights/read/_17__cf__23"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4e/Branch_3/Conv2d_0b_1x1/weights"
   attr {
     key: "data_format"
     value {
@@ -3013,9 +3760,24 @@ node {
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4e/Branch_3/Conv2d_0b_1x1/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4e/Branch_3/Conv2d_0b_1x1/Conv2D"
-  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4e/Branch_3/Conv2d_0b_1x1/Conv2D_bn_offset"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4e/Branch_3/Conv2d_0b_1x1/BatchNorm/gamma"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4e/Branch_3/Conv2d_0b_1x1/BatchNorm/beta"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4e/Branch_3/Conv2d_0b_1x1/BatchNorm/moving_mean"
+  input: "FirstStageFeatureExtractor/InceptionV2/Mixed_4e/Branch_3/Conv2d_0b_1x1/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4e/Branch_3/Conv2d_0b_1x1/Relu"
@@ -3075,7 +3837,7 @@ node {
   name: "Conv/BiasAdd"
   op: "BiasAdd"
   input: "Conv/Conv2D"
-  input: "Conv/biases/read/_12__cf__18"
+  input: "Conv/biases"
   attr {
     key: "data_format"
     value {
@@ -3092,7 +3854,7 @@ node {
   name: "FirstStageBoxPredictor/BoxEncodingPredictor/Conv2D"
   op: "Conv2D"
   input: "Conv/Relu6"
-  input: "FirstStageBoxPredictor/BoxEncodingPredictor/weights/read/_265__cf__271"
+  input: "FirstStageBoxPredictor/BoxEncodingPredictor/weights"
   attr {
     key: "data_format"
     value {
@@ -3138,7 +3900,7 @@ node {
   name: "FirstStageBoxPredictor/BoxEncodingPredictor/BiasAdd"
   op: "BiasAdd"
   input: "FirstStageBoxPredictor/BoxEncodingPredictor/Conv2D"
-  input: "FirstStageBoxPredictor/BoxEncodingPredictor/biases/read/_264__cf__270"
+  input: "FirstStageBoxPredictor/BoxEncodingPredictor/biases"
   attr {
     key: "data_format"
     value {
@@ -3150,7 +3912,7 @@ node {
   name: "FirstStageBoxPredictor/ClassPredictor/Conv2D"
   op: "Conv2D"
   input: "Conv/Relu6"
-  input: "FirstStageBoxPredictor/ClassPredictor/weights/read/_286__cf__292"
+  input: "FirstStageBoxPredictor/ClassPredictor/weights"
   attr {
     key: "data_format"
     value {
@@ -3190,7 +3952,7 @@ node {
   name: "FirstStageBoxPredictor/ClassPredictor/BiasAdd"
   op: "BiasAdd"
   input: "FirstStageBoxPredictor/ClassPredictor/Conv2D"
-  input: "FirstStageBoxPredictor/ClassPredictor/biases/read/_285__cf__291"
+  input: "FirstStageBoxPredictor/ClassPredictor/biases"
   attr {
     key: "data_format"
     value {
@@ -3357,7 +4119,7 @@ node {
   attr {
     key: "clip"
     value {
-      b: false
+      b: true
     }
   }
   attr {
@@ -3398,53 +4160,10 @@ node {
   }
 }
 node {
-  name: "clip_by_value/lower"
-  op: "Const"
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_FLOAT
-        tensor_shape {
-          dim {
-            size: 1
-          }
-        }
-        float_val: 0.0
-      }
-    }
-  }
-}
-node {
-  name: "clip_by_value/upper"
-  op: "Const"
-  attr {
-    key: "value"
-    value {
-      tensor {
-        dtype: DT_FLOAT
-        tensor_shape {
-          dim {
-            size: 1
-          }
-        }
-        float_val: 1.0
-      }
-    }
-  }
-}
-node {
-  name: "detection_out/clip_by_value"
-  op: "ClipByValue"
-  input: "detection_out"
-  input: "clip_by_value/lower"
-  input: "clip_by_value/upper"
-}
-node {
   name: "CropAndResize"
   op: "CropAndResize"
   input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4e/concat"
-  input: "detection_out/clip_by_value"
+  input: "detection_out"
   input: "CropAndResize/crop_size"
   attr {
     key: "extrapolation_value"
@@ -3502,7 +4221,7 @@ node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_0/Conv2d_0a_1x1/Conv2D"
   op: "Conv2D"
   input: "MaxPool2D/MaxPool"
-  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_0/Conv2d_0a_1x1/weights/read/_315__cf__321"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_0/Conv2d_0a_1x1/weights"
   attr {
     key: "data_format"
     value {
@@ -3540,9 +4259,24 @@ node {
 }
 node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_0/Conv2d_0a_1x1/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_0/Conv2d_0a_1x1/Conv2D"
-  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_0/Conv2d_0a_1x1/Conv2D_bn_offset"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_0/Conv2d_0a_1x1/BatchNorm/gamma"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_0/Conv2d_0a_1x1/BatchNorm/beta"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_0/Conv2d_0a_1x1/BatchNorm/moving_mean"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_0/Conv2d_0a_1x1/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_0/Conv2d_0a_1x1/Relu"
@@ -3553,7 +4287,7 @@ node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_0/Conv2d_1a_3x3/Conv2D"
   op: "Conv2D"
   input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_0/Conv2d_0a_1x1/Relu"
-  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_0/Conv2d_1a_3x3/weights/read/_310__cf__316"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_0/Conv2d_1a_3x3/weights"
   attr {
     key: "data_format"
     value {
@@ -3591,9 +4325,24 @@ node {
 }
 node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_0/Conv2d_1a_3x3/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_0/Conv2d_1a_3x3/Conv2D"
-  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_0/Conv2d_1a_3x3/Conv2D_bn_offset"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_0/Conv2d_1a_3x3/BatchNorm/gamma"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_0/Conv2d_1a_3x3/BatchNorm/beta"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_0/Conv2d_1a_3x3/BatchNorm/moving_mean"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_0/Conv2d_1a_3x3/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_0/Conv2d_1a_3x3/Relu"
@@ -3604,7 +4353,7 @@ node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_1/Conv2d_0a_1x1/Conv2D"
   op: "Conv2D"
   input: "MaxPool2D/MaxPool"
-  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_1/Conv2d_0a_1x1/weights/read/_305__cf__311"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_1/Conv2d_0a_1x1/weights"
   attr {
     key: "data_format"
     value {
@@ -3642,9 +4391,24 @@ node {
 }
 node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_1/Conv2d_0a_1x1/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_1/Conv2d_0a_1x1/Conv2D"
-  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_1/Conv2d_0a_1x1/Conv2D_bn_offset"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_1/Conv2d_0a_1x1/BatchNorm/gamma"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_1/Conv2d_0a_1x1/BatchNorm/beta"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_1/Conv2d_0a_1x1/BatchNorm/moving_mean"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_1/Conv2d_0a_1x1/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_1/Conv2d_0a_1x1/Relu"
@@ -3655,7 +4419,7 @@ node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_1/Conv2d_0b_3x3/Conv2D"
   op: "Conv2D"
   input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_1/Conv2d_0a_1x1/Relu"
-  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_1/Conv2d_0b_3x3/weights/read/_300__cf__306"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_1/Conv2d_0b_3x3/weights"
   attr {
     key: "data_format"
     value {
@@ -3693,9 +4457,24 @@ node {
 }
 node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_1/Conv2d_0b_3x3/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_1/Conv2d_0b_3x3/Conv2D"
-  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_1/Conv2d_0b_3x3/Conv2D_bn_offset"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_1/Conv2d_0b_3x3/BatchNorm/gamma"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_1/Conv2d_0b_3x3/BatchNorm/beta"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_1/Conv2d_0b_3x3/BatchNorm/moving_mean"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_1/Conv2d_0b_3x3/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_1/Conv2d_0b_3x3/Relu"
@@ -3706,7 +4485,7 @@ node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_1/Conv2d_1a_3x3/Conv2D"
   op: "Conv2D"
   input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_1/Conv2d_0b_3x3/Relu"
-  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_1/Conv2d_1a_3x3/weights/read/_295__cf__301"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_1/Conv2d_1a_3x3/weights"
   attr {
     key: "data_format"
     value {
@@ -3744,9 +4523,24 @@ node {
 }
 node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_1/Conv2d_1a_3x3/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_1/Conv2d_1a_3x3/Conv2D"
-  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_1/Conv2d_1a_3x3/Conv2D_bn_offset"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_1/Conv2d_1a_3x3/BatchNorm/gamma"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_1/Conv2d_1a_3x3/BatchNorm/beta"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_1/Conv2d_1a_3x3/BatchNorm/moving_mean"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_1/Conv2d_1a_3x3/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_1/Conv2d_1a_3x3/Relu"
@@ -3804,7 +4598,7 @@ node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_0/Conv2d_0a_1x1/Conv2D"
   op: "Conv2D"
   input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/concat"
-  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_0/Conv2d_0a_1x1/weights/read/_345__cf__351"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_0/Conv2d_0a_1x1/weights"
   attr {
     key: "data_format"
     value {
@@ -3842,9 +4636,24 @@ node {
 }
 node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_0/Conv2d_0a_1x1/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_0/Conv2d_0a_1x1/Conv2D"
-  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_0/Conv2d_0a_1x1/Conv2D_bn_offset"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_0/Conv2d_0a_1x1/BatchNorm/gamma"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_0/Conv2d_0a_1x1/BatchNorm/beta"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_0/Conv2d_0a_1x1/BatchNorm/moving_mean"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_0/Conv2d_0a_1x1/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_0/Conv2d_0a_1x1/Relu"
@@ -3855,7 +4664,7 @@ node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_1/Conv2d_0a_1x1/Conv2D"
   op: "Conv2D"
   input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/concat"
-  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_1/Conv2d_0a_1x1/weights/read/_340__cf__346"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_1/Conv2d_0a_1x1/weights"
   attr {
     key: "data_format"
     value {
@@ -3893,9 +4702,24 @@ node {
 }
 node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_1/Conv2d_0a_1x1/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_1/Conv2d_0a_1x1/Conv2D"
-  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_1/Conv2d_0a_1x1/Conv2D_bn_offset"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_1/Conv2d_0a_1x1/BatchNorm/gamma"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_1/Conv2d_0a_1x1/BatchNorm/beta"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_1/Conv2d_0a_1x1/BatchNorm/moving_mean"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_1/Conv2d_0a_1x1/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_1/Conv2d_0a_1x1/Relu"
@@ -3906,7 +4730,7 @@ node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_1/Conv2d_0b_3x3/Conv2D"
   op: "Conv2D"
   input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_1/Conv2d_0a_1x1/Relu"
-  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_1/Conv2d_0b_3x3/weights/read/_335__cf__341"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_1/Conv2d_0b_3x3/weights"
   attr {
     key: "data_format"
     value {
@@ -3944,9 +4768,24 @@ node {
 }
 node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_1/Conv2d_0b_3x3/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_1/Conv2d_0b_3x3/Conv2D"
-  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_1/Conv2d_0b_3x3/Conv2D_bn_offset"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_1/Conv2d_0b_3x3/BatchNorm/gamma"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_1/Conv2d_0b_3x3/BatchNorm/beta"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_1/Conv2d_0b_3x3/BatchNorm/moving_mean"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_1/Conv2d_0b_3x3/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_1/Conv2d_0b_3x3/Relu"
@@ -3957,7 +4796,7 @@ node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_2/Conv2d_0a_1x1/Conv2D"
   op: "Conv2D"
   input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/concat"
-  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_2/Conv2d_0a_1x1/weights/read/_330__cf__336"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_2/Conv2d_0a_1x1/weights"
   attr {
     key: "data_format"
     value {
@@ -3995,9 +4834,24 @@ node {
 }
 node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_2/Conv2d_0a_1x1/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_2/Conv2d_0a_1x1/Conv2D"
-  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_2/Conv2d_0a_1x1/Conv2D_bn_offset"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_2/Conv2d_0a_1x1/BatchNorm/gamma"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_2/Conv2d_0a_1x1/BatchNorm/beta"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_2/Conv2d_0a_1x1/BatchNorm/moving_mean"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_2/Conv2d_0a_1x1/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_2/Conv2d_0a_1x1/Relu"
@@ -4008,7 +4862,7 @@ node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_2/Conv2d_0b_3x3/Conv2D"
   op: "Conv2D"
   input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_2/Conv2d_0a_1x1/Relu"
-  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_2/Conv2d_0b_3x3/weights/read/_325__cf__331"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_2/Conv2d_0b_3x3/weights"
   attr {
     key: "data_format"
     value {
@@ -4046,9 +4900,24 @@ node {
 }
 node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_2/Conv2d_0b_3x3/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_2/Conv2d_0b_3x3/Conv2D"
-  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_2/Conv2d_0b_3x3/Conv2D_bn_offset"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_2/Conv2d_0b_3x3/BatchNorm/gamma"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_2/Conv2d_0b_3x3/BatchNorm/beta"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_2/Conv2d_0b_3x3/BatchNorm/moving_mean"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_2/Conv2d_0b_3x3/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_2/Conv2d_0b_3x3/Relu"
@@ -4059,7 +4928,7 @@ node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_2/Conv2d_0c_3x3/Conv2D"
   op: "Conv2D"
   input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_2/Conv2d_0b_3x3/Relu"
-  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_2/Conv2d_0c_3x3/weights/read/_320__cf__326"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_2/Conv2d_0c_3x3/weights"
   attr {
     key: "data_format"
     value {
@@ -4097,9 +4966,24 @@ node {
 }
 node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_2/Conv2d_0c_3x3/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_2/Conv2d_0c_3x3/Conv2D"
-  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_2/Conv2d_0c_3x3/Conv2D_bn_offset"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_2/Conv2d_0c_3x3/BatchNorm/gamma"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_2/Conv2d_0c_3x3/BatchNorm/beta"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_2/Conv2d_0c_3x3/BatchNorm/moving_mean"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_2/Conv2d_0c_3x3/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_2/Conv2d_0c_3x3/Relu"
@@ -4149,7 +5033,7 @@ node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_3/Conv2d_0b_1x1/Conv2D"
   op: "Conv2D"
   input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_3/AvgPool_0a_3x3/AvgPool"
-  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_3/Conv2d_0b_1x1/weights/read/_11__cf__17"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_3/Conv2d_0b_1x1/weights"
   attr {
     key: "data_format"
     value {
@@ -4187,9 +5071,24 @@ node {
 }
 node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_3/Conv2d_0b_1x1/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_3/Conv2d_0b_1x1/Conv2D"
-  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_3/Conv2d_0b_1x1/Conv2D_bn_offset"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_3/Conv2d_0b_1x1/BatchNorm/gamma"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_3/Conv2d_0b_1x1/BatchNorm/beta"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_3/Conv2d_0b_1x1/BatchNorm/moving_mean"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_3/Conv2d_0b_1x1/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_3/Conv2d_0b_1x1/Relu"
@@ -4209,7 +5108,7 @@ node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_0/Conv2d_0a_1x1/Conv2D"
   op: "Conv2D"
   input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/concat"
-  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_0/Conv2d_0a_1x1/weights/read/_375__cf__381"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_0/Conv2d_0a_1x1/weights"
   attr {
     key: "data_format"
     value {
@@ -4247,9 +5146,24 @@ node {
 }
 node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_0/Conv2d_0a_1x1/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_0/Conv2d_0a_1x1/Conv2D"
-  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_0/Conv2d_0a_1x1/Conv2D_bn_offset"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_0/Conv2d_0a_1x1/BatchNorm/gamma"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_0/Conv2d_0a_1x1/BatchNorm/beta"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_0/Conv2d_0a_1x1/BatchNorm/moving_mean"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_0/Conv2d_0a_1x1/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_0/Conv2d_0a_1x1/Relu"
@@ -4260,7 +5174,7 @@ node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_1/Conv2d_0a_1x1/Conv2D"
   op: "Conv2D"
   input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/concat"
-  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_1/Conv2d_0a_1x1/weights/read/_370__cf__376"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_1/Conv2d_0a_1x1/weights"
   attr {
     key: "data_format"
     value {
@@ -4298,9 +5212,24 @@ node {
 }
 node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_1/Conv2d_0a_1x1/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_1/Conv2d_0a_1x1/Conv2D"
-  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_1/Conv2d_0a_1x1/Conv2D_bn_offset"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_1/Conv2d_0a_1x1/BatchNorm/gamma"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_1/Conv2d_0a_1x1/BatchNorm/beta"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_1/Conv2d_0a_1x1/BatchNorm/moving_mean"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_1/Conv2d_0a_1x1/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_1/Conv2d_0a_1x1/Relu"
@@ -4311,7 +5240,7 @@ node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_1/Conv2d_0b_3x3/Conv2D"
   op: "Conv2D"
   input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_1/Conv2d_0a_1x1/Relu"
-  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_1/Conv2d_0b_3x3/weights/read/_365__cf__371"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_1/Conv2d_0b_3x3/weights"
   attr {
     key: "data_format"
     value {
@@ -4349,9 +5278,24 @@ node {
 }
 node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_1/Conv2d_0b_3x3/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_1/Conv2d_0b_3x3/Conv2D"
-  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_1/Conv2d_0b_3x3/Conv2D_bn_offset"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_1/Conv2d_0b_3x3/BatchNorm/gamma"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_1/Conv2d_0b_3x3/BatchNorm/beta"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_1/Conv2d_0b_3x3/BatchNorm/moving_mean"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_1/Conv2d_0b_3x3/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_1/Conv2d_0b_3x3/Relu"
@@ -4362,7 +5306,7 @@ node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_2/Conv2d_0a_1x1/Conv2D"
   op: "Conv2D"
   input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/concat"
-  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_2/Conv2d_0a_1x1/weights/read/_360__cf__366"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_2/Conv2d_0a_1x1/weights"
   attr {
     key: "data_format"
     value {
@@ -4400,9 +5344,24 @@ node {
 }
 node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_2/Conv2d_0a_1x1/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_2/Conv2d_0a_1x1/Conv2D"
-  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_2/Conv2d_0a_1x1/Conv2D_bn_offset"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_2/Conv2d_0a_1x1/BatchNorm/gamma"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_2/Conv2d_0a_1x1/BatchNorm/beta"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_2/Conv2d_0a_1x1/BatchNorm/moving_mean"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_2/Conv2d_0a_1x1/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_2/Conv2d_0a_1x1/Relu"
@@ -4413,7 +5372,7 @@ node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_2/Conv2d_0b_3x3/Conv2D"
   op: "Conv2D"
   input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_2/Conv2d_0a_1x1/Relu"
-  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_2/Conv2d_0b_3x3/weights/read/_355__cf__361"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_2/Conv2d_0b_3x3/weights"
   attr {
     key: "data_format"
     value {
@@ -4451,9 +5410,24 @@ node {
 }
 node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_2/Conv2d_0b_3x3/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_2/Conv2d_0b_3x3/Conv2D"
-  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_2/Conv2d_0b_3x3/Conv2D_bn_offset"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_2/Conv2d_0b_3x3/BatchNorm/gamma"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_2/Conv2d_0b_3x3/BatchNorm/beta"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_2/Conv2d_0b_3x3/BatchNorm/moving_mean"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_2/Conv2d_0b_3x3/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_2/Conv2d_0b_3x3/Relu"
@@ -4464,7 +5438,7 @@ node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_2/Conv2d_0c_3x3/Conv2D"
   op: "Conv2D"
   input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_2/Conv2d_0b_3x3/Relu"
-  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_2/Conv2d_0c_3x3/weights/read/_350__cf__356"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_2/Conv2d_0c_3x3/weights"
   attr {
     key: "data_format"
     value {
@@ -4502,9 +5476,24 @@ node {
 }
 node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_2/Conv2d_0c_3x3/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_2/Conv2d_0c_3x3/Conv2D"
-  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_2/Conv2d_0c_3x3/Conv2D_bn_offset"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_2/Conv2d_0c_3x3/BatchNorm/gamma"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_2/Conv2d_0c_3x3/BatchNorm/beta"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_2/Conv2d_0c_3x3/BatchNorm/moving_mean"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_2/Conv2d_0c_3x3/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_2/Conv2d_0c_3x3/Relu"
@@ -4554,7 +5543,7 @@ node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_3/Conv2d_0b_1x1/Conv2D"
   op: "Conv2D"
   input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_3/MaxPool_0a_3x3/MaxPool"
-  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_3/Conv2d_0b_1x1/weights/read/_6__cf__12"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_3/Conv2d_0b_1x1/weights"
   attr {
     key: "data_format"
     value {
@@ -4592,9 +5581,24 @@ node {
 }
 node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_3/Conv2d_0b_1x1/BatchNorm/FusedBatchNorm"
-  op: "BiasAdd"
+  op: "FusedBatchNorm"
   input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_3/Conv2d_0b_1x1/Conv2D"
-  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_3/Conv2d_0b_1x1/Conv2D_bn_offset"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_3/Conv2d_0b_1x1/BatchNorm/gamma"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_3/Conv2d_0b_1x1/BatchNorm/beta"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_3/Conv2d_0b_1x1/BatchNorm/moving_mean"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_3/Conv2d_0b_1x1/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
 }
 node {
   name: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_3/Conv2d_0b_1x1/Relu"
@@ -4631,7 +5635,7 @@ node {
   name: "SecondStageBoxPredictor/BoxEncodingPredictor/MatMul"
   op: "MatMul"
   input: "SecondStageBoxPredictor/Flatten/flatten/Reshape"
-  input: "SecondStageBoxPredictor/BoxEncodingPredictor/weights/read/_1__cf__7"
+  input: "SecondStageBoxPredictor/BoxEncodingPredictor/weights"
   attr {
     key: "loc_pred_transposed"
     value {
@@ -4655,7 +5659,7 @@ node {
   name: "SecondStageBoxPredictor/BoxEncodingPredictor/BiasAdd"
   op: "BiasAdd"
   input: "SecondStageBoxPredictor/BoxEncodingPredictor/MatMul"
-  input: "SecondStageBoxPredictor/BoxEncodingPredictor/biases/read/_0__cf__6"
+  input: "SecondStageBoxPredictor/BoxEncodingPredictor/biases"
   attr {
     key: "data_format"
     value {
@@ -4667,7 +5671,7 @@ node {
   name: "SecondStageBoxPredictor/ClassPredictor/MatMul"
   op: "MatMul"
   input: "SecondStageBoxPredictor/Flatten/flatten/Reshape"
-  input: "SecondStageBoxPredictor/ClassPredictor/weights/read/_380__cf__386"
+  input: "SecondStageBoxPredictor/ClassPredictor/weights"
   attr {
     key: "transpose_a"
     value {
@@ -4685,7 +5689,7 @@ node {
   name: "SecondStageBoxPredictor/ClassPredictor/BiasAdd"
   op: "BiasAdd"
   input: "SecondStageBoxPredictor/ClassPredictor/MatMul"
-  input: "SecondStageBoxPredictor/ClassPredictor/biases/read/_379__cf__385"
+  input: "SecondStageBoxPredictor/ClassPredictor/biases"
   attr {
     key: "data_format"
     value {
@@ -4853,7 +5857,7 @@ node {
 node {
   name: "detection_out/slice"
   op: "Slice"
-  input: "detection_out/clip_by_value"
+  input: "detection_out"
   input: "detection_out/slice/begins"
   input: "detection_out/slice/sizes"
 }
@@ -4946,6 +5950,18 @@ node {
     }
   }
   attr {
+    key: "confidence_threshold"
+    value {
+      f: 0.300000011921
+    }
+  }
+  attr {
+    key: "group_by_classes"
+    value {
+      b: false
+    }
+  }
+  attr {
     key: "keep_top_k"
     value {
       i: 100
@@ -4975,6 +5991,1593 @@ node {
       b: true
     }
   }
+}
+node {
+  name: "CropAndResize_1"
+  op: "CropAndResize"
+  input: "FirstStageFeatureExtractor/InceptionV2/InceptionV2/Mixed_4e/concat"
+  input: "detection_out_final"
+  input: "CropAndResize_1/crop_size"
+  attr {
+    key: "extrapolation_value"
+    value {
+      f: 0.0
+    }
+  }
+  attr {
+    key: "method"
+    value {
+      s: "bilinear"
+    }
+  }
+}
+node {
+  name: "MaxPool2D_1/MaxPool"
+  op: "MaxPool"
+  input: "CropAndResize_1"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "ksize"
+    value {
+      list {
+        i: 1
+        i: 2
+        i: 2
+        i: 1
+      }
+    }
+  }
+  attr {
+    key: "padding"
+    value {
+      s: "VALID"
+    }
+  }
+  attr {
+    key: "strides"
+    value {
+      list {
+        i: 1
+        i: 2
+        i: 2
+        i: 1
+      }
+    }
+  }
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5a/Branch_0/Conv2d_0a_1x1/Conv2D"
+  op: "Conv2D"
+  input: "MaxPool2D_1/MaxPool"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_0/Conv2d_0a_1x1/weights"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "dilations"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+  attr {
+    key: "padding"
+    value {
+      s: "SAME"
+    }
+  }
+  attr {
+    key: "strides"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5a/Branch_0/Conv2d_0a_1x1/BatchNorm/FusedBatchNorm"
+  op: "FusedBatchNorm"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5a/Branch_0/Conv2d_0a_1x1/Conv2D"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_0/Conv2d_0a_1x1/BatchNorm/gamma"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_0/Conv2d_0a_1x1/BatchNorm/beta"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_0/Conv2d_0a_1x1/BatchNorm/moving_mean"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_0/Conv2d_0a_1x1/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5a/Branch_0/Conv2d_0a_1x1/Relu"
+  op: "Relu"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5a/Branch_0/Conv2d_0a_1x1/BatchNorm/FusedBatchNorm"
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5a/Branch_0/Conv2d_1a_3x3/Conv2D"
+  op: "Conv2D"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5a/Branch_0/Conv2d_0a_1x1/Relu"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_0/Conv2d_1a_3x3/weights"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "dilations"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+  attr {
+    key: "padding"
+    value {
+      s: "SAME"
+    }
+  }
+  attr {
+    key: "strides"
+    value {
+      list {
+        i: 1
+        i: 2
+        i: 2
+        i: 1
+      }
+    }
+  }
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5a/Branch_0/Conv2d_1a_3x3/BatchNorm/FusedBatchNorm"
+  op: "FusedBatchNorm"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5a/Branch_0/Conv2d_1a_3x3/Conv2D"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_0/Conv2d_1a_3x3/BatchNorm/gamma"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_0/Conv2d_1a_3x3/BatchNorm/beta"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_0/Conv2d_1a_3x3/BatchNorm/moving_mean"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_0/Conv2d_1a_3x3/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5a/Branch_0/Conv2d_1a_3x3/Relu"
+  op: "Relu"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5a/Branch_0/Conv2d_1a_3x3/BatchNorm/FusedBatchNorm"
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5a/Branch_1/Conv2d_0a_1x1/Conv2D"
+  op: "Conv2D"
+  input: "MaxPool2D_1/MaxPool"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_1/Conv2d_0a_1x1/weights"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "dilations"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+  attr {
+    key: "padding"
+    value {
+      s: "SAME"
+    }
+  }
+  attr {
+    key: "strides"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5a/Branch_1/Conv2d_0a_1x1/BatchNorm/FusedBatchNorm"
+  op: "FusedBatchNorm"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5a/Branch_1/Conv2d_0a_1x1/Conv2D"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_1/Conv2d_0a_1x1/BatchNorm/gamma"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_1/Conv2d_0a_1x1/BatchNorm/beta"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_1/Conv2d_0a_1x1/BatchNorm/moving_mean"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_1/Conv2d_0a_1x1/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5a/Branch_1/Conv2d_0a_1x1/Relu"
+  op: "Relu"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5a/Branch_1/Conv2d_0a_1x1/BatchNorm/FusedBatchNorm"
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5a/Branch_1/Conv2d_0b_3x3/Conv2D"
+  op: "Conv2D"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5a/Branch_1/Conv2d_0a_1x1/Relu"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_1/Conv2d_0b_3x3/weights"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "dilations"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+  attr {
+    key: "padding"
+    value {
+      s: "SAME"
+    }
+  }
+  attr {
+    key: "strides"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5a/Branch_1/Conv2d_0b_3x3/BatchNorm/FusedBatchNorm"
+  op: "FusedBatchNorm"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5a/Branch_1/Conv2d_0b_3x3/Conv2D"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_1/Conv2d_0b_3x3/BatchNorm/gamma"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_1/Conv2d_0b_3x3/BatchNorm/beta"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_1/Conv2d_0b_3x3/BatchNorm/moving_mean"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_1/Conv2d_0b_3x3/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5a/Branch_1/Conv2d_0b_3x3/Relu"
+  op: "Relu"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5a/Branch_1/Conv2d_0b_3x3/BatchNorm/FusedBatchNorm"
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5a/Branch_1/Conv2d_1a_3x3/Conv2D"
+  op: "Conv2D"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5a/Branch_1/Conv2d_0b_3x3/Relu"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_1/Conv2d_1a_3x3/weights"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "dilations"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+  attr {
+    key: "padding"
+    value {
+      s: "SAME"
+    }
+  }
+  attr {
+    key: "strides"
+    value {
+      list {
+        i: 1
+        i: 2
+        i: 2
+        i: 1
+      }
+    }
+  }
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5a/Branch_1/Conv2d_1a_3x3/BatchNorm/FusedBatchNorm"
+  op: "FusedBatchNorm"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5a/Branch_1/Conv2d_1a_3x3/Conv2D"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_1/Conv2d_1a_3x3/BatchNorm/gamma"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_1/Conv2d_1a_3x3/BatchNorm/beta"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_1/Conv2d_1a_3x3/BatchNorm/moving_mean"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5a/Branch_1/Conv2d_1a_3x3/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5a/Branch_1/Conv2d_1a_3x3/Relu"
+  op: "Relu"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5a/Branch_1/Conv2d_1a_3x3/BatchNorm/FusedBatchNorm"
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5a/Branch_2/MaxPool_1a_3x3/MaxPool"
+  op: "MaxPool"
+  input: "MaxPool2D_1/MaxPool"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "ksize"
+    value {
+      list {
+        i: 1
+        i: 3
+        i: 3
+        i: 1
+      }
+    }
+  }
+  attr {
+    key: "padding"
+    value {
+      s: "SAME"
+    }
+  }
+  attr {
+    key: "strides"
+    value {
+      list {
+        i: 1
+        i: 2
+        i: 2
+        i: 1
+      }
+    }
+  }
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5a/concat"
+  op: "ConcatV2"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5a/Branch_0/Conv2d_1a_3x3/Relu"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5a/Branch_1/Conv2d_1a_3x3/Relu"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5a/Branch_2/MaxPool_1a_3x3/MaxPool"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5a/concat/axis"
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5b/Branch_0/Conv2d_0a_1x1/Conv2D"
+  op: "Conv2D"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5a/concat"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_0/Conv2d_0a_1x1/weights"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "dilations"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+  attr {
+    key: "padding"
+    value {
+      s: "SAME"
+    }
+  }
+  attr {
+    key: "strides"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5b/Branch_0/Conv2d_0a_1x1/BatchNorm/FusedBatchNorm"
+  op: "FusedBatchNorm"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5b/Branch_0/Conv2d_0a_1x1/Conv2D"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_0/Conv2d_0a_1x1/BatchNorm/gamma"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_0/Conv2d_0a_1x1/BatchNorm/beta"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_0/Conv2d_0a_1x1/BatchNorm/moving_mean"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_0/Conv2d_0a_1x1/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5b/Branch_0/Conv2d_0a_1x1/Relu"
+  op: "Relu"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5b/Branch_0/Conv2d_0a_1x1/BatchNorm/FusedBatchNorm"
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5b/Branch_1/Conv2d_0a_1x1/Conv2D"
+  op: "Conv2D"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5a/concat"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_1/Conv2d_0a_1x1/weights"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "dilations"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+  attr {
+    key: "padding"
+    value {
+      s: "SAME"
+    }
+  }
+  attr {
+    key: "strides"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5b/Branch_1/Conv2d_0a_1x1/BatchNorm/FusedBatchNorm"
+  op: "FusedBatchNorm"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5b/Branch_1/Conv2d_0a_1x1/Conv2D"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_1/Conv2d_0a_1x1/BatchNorm/gamma"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_1/Conv2d_0a_1x1/BatchNorm/beta"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_1/Conv2d_0a_1x1/BatchNorm/moving_mean"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_1/Conv2d_0a_1x1/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5b/Branch_1/Conv2d_0a_1x1/Relu"
+  op: "Relu"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5b/Branch_1/Conv2d_0a_1x1/BatchNorm/FusedBatchNorm"
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5b/Branch_1/Conv2d_0b_3x3/Conv2D"
+  op: "Conv2D"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5b/Branch_1/Conv2d_0a_1x1/Relu"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_1/Conv2d_0b_3x3/weights"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "dilations"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+  attr {
+    key: "padding"
+    value {
+      s: "SAME"
+    }
+  }
+  attr {
+    key: "strides"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5b/Branch_1/Conv2d_0b_3x3/BatchNorm/FusedBatchNorm"
+  op: "FusedBatchNorm"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5b/Branch_1/Conv2d_0b_3x3/Conv2D"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_1/Conv2d_0b_3x3/BatchNorm/gamma"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_1/Conv2d_0b_3x3/BatchNorm/beta"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_1/Conv2d_0b_3x3/BatchNorm/moving_mean"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_1/Conv2d_0b_3x3/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5b/Branch_1/Conv2d_0b_3x3/Relu"
+  op: "Relu"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5b/Branch_1/Conv2d_0b_3x3/BatchNorm/FusedBatchNorm"
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5b/Branch_2/Conv2d_0a_1x1/Conv2D"
+  op: "Conv2D"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5a/concat"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_2/Conv2d_0a_1x1/weights"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "dilations"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+  attr {
+    key: "padding"
+    value {
+      s: "SAME"
+    }
+  }
+  attr {
+    key: "strides"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5b/Branch_2/Conv2d_0a_1x1/BatchNorm/FusedBatchNorm"
+  op: "FusedBatchNorm"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5b/Branch_2/Conv2d_0a_1x1/Conv2D"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_2/Conv2d_0a_1x1/BatchNorm/gamma"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_2/Conv2d_0a_1x1/BatchNorm/beta"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_2/Conv2d_0a_1x1/BatchNorm/moving_mean"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_2/Conv2d_0a_1x1/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5b/Branch_2/Conv2d_0a_1x1/Relu"
+  op: "Relu"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5b/Branch_2/Conv2d_0a_1x1/BatchNorm/FusedBatchNorm"
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5b/Branch_2/Conv2d_0b_3x3/Conv2D"
+  op: "Conv2D"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5b/Branch_2/Conv2d_0a_1x1/Relu"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_2/Conv2d_0b_3x3/weights"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "dilations"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+  attr {
+    key: "padding"
+    value {
+      s: "SAME"
+    }
+  }
+  attr {
+    key: "strides"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5b/Branch_2/Conv2d_0b_3x3/BatchNorm/FusedBatchNorm"
+  op: "FusedBatchNorm"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5b/Branch_2/Conv2d_0b_3x3/Conv2D"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_2/Conv2d_0b_3x3/BatchNorm/gamma"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_2/Conv2d_0b_3x3/BatchNorm/beta"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_2/Conv2d_0b_3x3/BatchNorm/moving_mean"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_2/Conv2d_0b_3x3/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5b/Branch_2/Conv2d_0b_3x3/Relu"
+  op: "Relu"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5b/Branch_2/Conv2d_0b_3x3/BatchNorm/FusedBatchNorm"
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5b/Branch_2/Conv2d_0c_3x3/Conv2D"
+  op: "Conv2D"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5b/Branch_2/Conv2d_0b_3x3/Relu"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_2/Conv2d_0c_3x3/weights"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "dilations"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+  attr {
+    key: "padding"
+    value {
+      s: "SAME"
+    }
+  }
+  attr {
+    key: "strides"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5b/Branch_2/Conv2d_0c_3x3/BatchNorm/FusedBatchNorm"
+  op: "FusedBatchNorm"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5b/Branch_2/Conv2d_0c_3x3/Conv2D"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_2/Conv2d_0c_3x3/BatchNorm/gamma"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_2/Conv2d_0c_3x3/BatchNorm/beta"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_2/Conv2d_0c_3x3/BatchNorm/moving_mean"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_2/Conv2d_0c_3x3/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5b/Branch_2/Conv2d_0c_3x3/Relu"
+  op: "Relu"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5b/Branch_2/Conv2d_0c_3x3/BatchNorm/FusedBatchNorm"
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5b/Branch_3/AvgPool_0a_3x3/AvgPool"
+  op: "AvgPool"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5a/concat"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "ksize"
+    value {
+      list {
+        i: 1
+        i: 3
+        i: 3
+        i: 1
+      }
+    }
+  }
+  attr {
+    key: "padding"
+    value {
+      s: "SAME"
+    }
+  }
+  attr {
+    key: "strides"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5b/Branch_3/Conv2d_0b_1x1/Conv2D"
+  op: "Conv2D"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5b/Branch_3/AvgPool_0a_3x3/AvgPool"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_3/Conv2d_0b_1x1/weights"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "dilations"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+  attr {
+    key: "padding"
+    value {
+      s: "SAME"
+    }
+  }
+  attr {
+    key: "strides"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5b/Branch_3/Conv2d_0b_1x1/BatchNorm/FusedBatchNorm"
+  op: "FusedBatchNorm"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5b/Branch_3/Conv2d_0b_1x1/Conv2D"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_3/Conv2d_0b_1x1/BatchNorm/gamma"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_3/Conv2d_0b_1x1/BatchNorm/beta"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_3/Conv2d_0b_1x1/BatchNorm/moving_mean"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5b/Branch_3/Conv2d_0b_1x1/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5b/Branch_3/Conv2d_0b_1x1/Relu"
+  op: "Relu"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5b/Branch_3/Conv2d_0b_1x1/BatchNorm/FusedBatchNorm"
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5b/concat"
+  op: "ConcatV2"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5b/Branch_0/Conv2d_0a_1x1/Relu"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5b/Branch_1/Conv2d_0b_3x3/Relu"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5b/Branch_2/Conv2d_0c_3x3/Relu"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5b/Branch_3/Conv2d_0b_1x1/Relu"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5b/concat/axis"
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5c/Branch_0/Conv2d_0a_1x1/Conv2D"
+  op: "Conv2D"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5b/concat"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_0/Conv2d_0a_1x1/weights"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "dilations"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+  attr {
+    key: "padding"
+    value {
+      s: "SAME"
+    }
+  }
+  attr {
+    key: "strides"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5c/Branch_0/Conv2d_0a_1x1/BatchNorm/FusedBatchNorm"
+  op: "FusedBatchNorm"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5c/Branch_0/Conv2d_0a_1x1/Conv2D"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_0/Conv2d_0a_1x1/BatchNorm/gamma"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_0/Conv2d_0a_1x1/BatchNorm/beta"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_0/Conv2d_0a_1x1/BatchNorm/moving_mean"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_0/Conv2d_0a_1x1/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5c/Branch_0/Conv2d_0a_1x1/Relu"
+  op: "Relu"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5c/Branch_0/Conv2d_0a_1x1/BatchNorm/FusedBatchNorm"
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5c/Branch_1/Conv2d_0a_1x1/Conv2D"
+  op: "Conv2D"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5b/concat"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_1/Conv2d_0a_1x1/weights"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "dilations"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+  attr {
+    key: "padding"
+    value {
+      s: "SAME"
+    }
+  }
+  attr {
+    key: "strides"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5c/Branch_1/Conv2d_0a_1x1/BatchNorm/FusedBatchNorm"
+  op: "FusedBatchNorm"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5c/Branch_1/Conv2d_0a_1x1/Conv2D"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_1/Conv2d_0a_1x1/BatchNorm/gamma"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_1/Conv2d_0a_1x1/BatchNorm/beta"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_1/Conv2d_0a_1x1/BatchNorm/moving_mean"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_1/Conv2d_0a_1x1/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5c/Branch_1/Conv2d_0a_1x1/Relu"
+  op: "Relu"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5c/Branch_1/Conv2d_0a_1x1/BatchNorm/FusedBatchNorm"
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5c/Branch_1/Conv2d_0b_3x3/Conv2D"
+  op: "Conv2D"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5c/Branch_1/Conv2d_0a_1x1/Relu"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_1/Conv2d_0b_3x3/weights"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "dilations"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+  attr {
+    key: "padding"
+    value {
+      s: "SAME"
+    }
+  }
+  attr {
+    key: "strides"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5c/Branch_1/Conv2d_0b_3x3/BatchNorm/FusedBatchNorm"
+  op: "FusedBatchNorm"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5c/Branch_1/Conv2d_0b_3x3/Conv2D"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_1/Conv2d_0b_3x3/BatchNorm/gamma"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_1/Conv2d_0b_3x3/BatchNorm/beta"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_1/Conv2d_0b_3x3/BatchNorm/moving_mean"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_1/Conv2d_0b_3x3/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5c/Branch_1/Conv2d_0b_3x3/Relu"
+  op: "Relu"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5c/Branch_1/Conv2d_0b_3x3/BatchNorm/FusedBatchNorm"
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5c/Branch_2/Conv2d_0a_1x1/Conv2D"
+  op: "Conv2D"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5b/concat"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_2/Conv2d_0a_1x1/weights"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "dilations"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+  attr {
+    key: "padding"
+    value {
+      s: "SAME"
+    }
+  }
+  attr {
+    key: "strides"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5c/Branch_2/Conv2d_0a_1x1/BatchNorm/FusedBatchNorm"
+  op: "FusedBatchNorm"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5c/Branch_2/Conv2d_0a_1x1/Conv2D"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_2/Conv2d_0a_1x1/BatchNorm/gamma"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_2/Conv2d_0a_1x1/BatchNorm/beta"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_2/Conv2d_0a_1x1/BatchNorm/moving_mean"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_2/Conv2d_0a_1x1/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5c/Branch_2/Conv2d_0a_1x1/Relu"
+  op: "Relu"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5c/Branch_2/Conv2d_0a_1x1/BatchNorm/FusedBatchNorm"
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5c/Branch_2/Conv2d_0b_3x3/Conv2D"
+  op: "Conv2D"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5c/Branch_2/Conv2d_0a_1x1/Relu"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_2/Conv2d_0b_3x3/weights"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "dilations"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+  attr {
+    key: "padding"
+    value {
+      s: "SAME"
+    }
+  }
+  attr {
+    key: "strides"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5c/Branch_2/Conv2d_0b_3x3/BatchNorm/FusedBatchNorm"
+  op: "FusedBatchNorm"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5c/Branch_2/Conv2d_0b_3x3/Conv2D"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_2/Conv2d_0b_3x3/BatchNorm/gamma"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_2/Conv2d_0b_3x3/BatchNorm/beta"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_2/Conv2d_0b_3x3/BatchNorm/moving_mean"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_2/Conv2d_0b_3x3/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5c/Branch_2/Conv2d_0b_3x3/Relu"
+  op: "Relu"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5c/Branch_2/Conv2d_0b_3x3/BatchNorm/FusedBatchNorm"
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5c/Branch_2/Conv2d_0c_3x3/Conv2D"
+  op: "Conv2D"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5c/Branch_2/Conv2d_0b_3x3/Relu"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_2/Conv2d_0c_3x3/weights"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "dilations"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+  attr {
+    key: "padding"
+    value {
+      s: "SAME"
+    }
+  }
+  attr {
+    key: "strides"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5c/Branch_2/Conv2d_0c_3x3/BatchNorm/FusedBatchNorm"
+  op: "FusedBatchNorm"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5c/Branch_2/Conv2d_0c_3x3/Conv2D"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_2/Conv2d_0c_3x3/BatchNorm/gamma"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_2/Conv2d_0c_3x3/BatchNorm/beta"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_2/Conv2d_0c_3x3/BatchNorm/moving_mean"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_2/Conv2d_0c_3x3/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5c/Branch_2/Conv2d_0c_3x3/Relu"
+  op: "Relu"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5c/Branch_2/Conv2d_0c_3x3/BatchNorm/FusedBatchNorm"
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5c/Branch_3/MaxPool_0a_3x3/MaxPool"
+  op: "MaxPool"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5b/concat"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "ksize"
+    value {
+      list {
+        i: 1
+        i: 3
+        i: 3
+        i: 1
+      }
+    }
+  }
+  attr {
+    key: "padding"
+    value {
+      s: "SAME"
+    }
+  }
+  attr {
+    key: "strides"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5c/Branch_3/Conv2d_0b_1x1/Conv2D"
+  op: "Conv2D"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5c/Branch_3/MaxPool_0a_3x3/MaxPool"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_3/Conv2d_0b_1x1/weights"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "dilations"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+  attr {
+    key: "padding"
+    value {
+      s: "SAME"
+    }
+  }
+  attr {
+    key: "strides"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5c/Branch_3/Conv2d_0b_1x1/BatchNorm/FusedBatchNorm"
+  op: "FusedBatchNorm"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5c/Branch_3/Conv2d_0b_1x1/Conv2D"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_3/Conv2d_0b_1x1/BatchNorm/gamma"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_3/Conv2d_0b_1x1/BatchNorm/beta"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_3/Conv2d_0b_1x1/BatchNorm/moving_mean"
+  input: "SecondStageFeatureExtractor/InceptionV2/Mixed_5c/Branch_3/Conv2d_0b_1x1/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.0010000000475
+    }
+  }
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5c/Branch_3/Conv2d_0b_1x1/Relu"
+  op: "Relu"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5c/Branch_3/Conv2d_0b_1x1/BatchNorm/FusedBatchNorm"
+}
+node {
+  name: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5c/concat"
+  op: "ConcatV2"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5c/Branch_0/Conv2d_0a_1x1/Relu"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5c/Branch_1/Conv2d_0b_3x3/Relu"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5c/Branch_2/Conv2d_0c_3x3/Relu"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5c/Branch_3/Conv2d_0b_1x1/Relu"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5c/concat/axis"
+}
+node {
+  name: "SecondStageBoxPredictor_1/ResizeBilinear"
+  op: "ResizeBilinear"
+  input: "SecondStageFeatureExtractor_1/InceptionV2/Mixed_5c/concat"
+  input: "SecondStageBoxPredictor_1/ResizeBilinear/size"
+  attr {
+    key: "align_corners"
+    value {
+      b: true
+    }
+  }
+}
+node {
+  name: "SecondStageBoxPredictor_1/Conv/Conv2D"
+  op: "Conv2D"
+  input: "SecondStageBoxPredictor_1/ResizeBilinear"
+  input: "SecondStageBoxPredictor/Conv/weights"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "dilations"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+  attr {
+    key: "padding"
+    value {
+      s: "SAME"
+    }
+  }
+  attr {
+    key: "strides"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+}
+node {
+  name: "SecondStageBoxPredictor_1/Conv/BiasAdd"
+  op: "BiasAdd"
+  input: "SecondStageBoxPredictor_1/Conv/Conv2D"
+  input: "SecondStageBoxPredictor/Conv/biases"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+}
+node {
+  name: "SecondStageBoxPredictor_1/Conv/Relu"
+  op: "Relu"
+  input: "SecondStageBoxPredictor_1/Conv/BiasAdd"
+}
+node {
+  name: "SecondStageBoxPredictor_1/Conv_1/Conv2D"
+  op: "Conv2D"
+  input: "SecondStageBoxPredictor_1/Conv/Relu"
+  input: "SecondStageBoxPredictor/Conv_1/weights"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "dilations"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+  attr {
+    key: "padding"
+    value {
+      s: "SAME"
+    }
+  }
+  attr {
+    key: "strides"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+}
+node {
+  name: "SecondStageBoxPredictor_1/Conv_1/BiasAdd"
+  op: "BiasAdd"
+  input: "SecondStageBoxPredictor_1/Conv_1/Conv2D"
+  input: "SecondStageBoxPredictor/Conv_1/biases"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+}
+node {
+  name: "SecondStageBoxPredictor_1/transpose"
+  op: "Transpose"
+  input: "SecondStageBoxPredictor_1/Conv_1/BiasAdd"
+  input: "SecondStageBoxPredictor_1/transpose/perm"
+}
+node {
+  name: "detection_masks"
+  op: "Sigmoid"
+  input: "SecondStageBoxPredictor_1/transpose"
 }
 library {
 }
