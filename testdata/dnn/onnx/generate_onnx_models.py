@@ -29,15 +29,17 @@ def export_to_string(model, inputs):
 
 
 def save_data_and_model(name, input, model):
+    model.eval()
     print name + " input has sizes",  input.shape
     input_files = os.path.join("data", "input_" + name)
     np.save(input_files, input.data)
 
     output = model(input)
+
     print name + " output has sizes", output.shape
     print
     output_files =  os.path.join("data", "output_" + name)
-    np.save(output_files, output.data)
+    np.save(output_files, np.ascontiguousarray(output.data))
 
     models_files = os.path.join("models", name + ".onnx")
 
@@ -57,6 +59,9 @@ input = Variable(torch.randn(1, 3, 10, 10))
 conv = nn.Conv2d(3, 5, kernel_size=5, stride=2, padding=1)
 save_data_and_model("convolution", input, conv)
 
+input = Variable(torch.randn(1, 3, 10, 10))
+deconv = nn.ConvTranspose2d(3, 5, kernel_size=5, stride=2, padding=1)
+save_data_and_model("deconvolution", input, deconv)
 
 input = Variable(torch.randn(2, 3))
 linear = nn.Linear(3, 4, bias=True)
@@ -78,6 +83,12 @@ conv2 = nn.Sequential(
           )
 save_data_and_model("two_convolution", input, conv2)
 
+input = Variable(torch.randn(1, 3, 10, 20))
+deconv2 = nn.Sequential(
+    nn.ConvTranspose2d(3, 6, kernel_size=(5,3), stride=1, padding=1),
+    nn.ConvTranspose2d(6, 4, kernel_size=5, stride=2, padding=(0,2))
+)
+save_data_and_model("two_deconvolution", input, deconv2)
 
 input = Variable(torch.randn(2, 3, 12, 9))
 maxpool2 = nn.Sequential(
@@ -200,3 +211,38 @@ model = nn.Sequential(
                 )
 input = Variable(torch.randn(1, 3, 32, 32))
 save_data_and_model("constant", input, model)
+
+
+class Transpose(nn.Module):
+
+    def __init__(self):
+        super(Transpose, self).__init__()
+        self.relu = nn.ReLU()
+
+    def forward(self, x):
+        x = self.relu(x)
+        return torch.t(x)
+
+
+input = Variable(torch.randn(2, 3))
+model = Transpose()
+save_data_and_model("transpose", input, model)
+
+input = Variable(torch.randn(1, 2, 3, 4))
+pad = nn.ZeroPad2d((4,3, 2,1))  # left,right, top,bottom
+save_data_and_model("padding", input, pad)
+
+
+class DynamicReshapeNet(nn.Module):
+    def __init__(self):
+        super(DynamicReshapeNet, self).__init__()
+
+    def forward(self, image):
+        batch_size = image.size(0)
+        channels = image.size(1)
+        image = image.permute(0, 2, 3, 1).contiguous().view(batch_size, -1, channels)
+        return image
+
+input = Variable(torch.randn(1, 2, 3, 4))
+model = DynamicReshapeNet()
+save_data_and_model("dynamic_reshape", input, model)
