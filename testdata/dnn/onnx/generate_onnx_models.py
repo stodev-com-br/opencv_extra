@@ -49,7 +49,28 @@ def save_data_and_model(name, input, model):
     with open(models_files, 'wb') as file:
         file.write(model_def.SerializeToString())
 
+def save_onnx_data_and_model(input, output, name, operation, *args, **kwargs):
+    print(name + " input has sizes",  input.shape)
+    input_files = os.path.join("data", "input_" + name)
+    input = input.astype(np.float32)
+    np.save(input_files, input.data)
+
+    print(name + " output has sizes", output.shape)
+    print()
+    output_files =  os.path.join("data", "output_" + name)
+    output = output.astype(np.float32)
+    np.save(output_files, np.ascontiguousarray(output.data))
+
+    models_files = os.path.join("models", name + ".onnx")
+    X = onnx.helper.make_tensor_value_info('input', onnx.TensorProto.FLOAT, input.shape)
+    Y = onnx.helper.make_tensor_value_info('output', onnx.TensorProto.FLOAT, output.shape)
+    node = onnx.helper.make_node(operation, inputs=['input'], outputs=['output'], *args, **kwargs)
+    graph = onnx.helper.make_graph([node], name, [X], [Y])
+    model = onnx.helper.make_model(graph, producer_name=name)
+    onnx.save(model, models_files)
+
 torch.manual_seed(0)
+np.random.seed(0)
 
 input = Variable(torch.randn(1, 3, 10, 9))
 max_pool = nn.MaxPool2d(kernel_size=(5,3), stride=3, padding=1, dilation=1)
@@ -314,3 +335,107 @@ class LogSoftmax(nn.Module):
 input = torch.randn(2, 3)
 model = LogSoftmax()
 save_data_and_model("log_softmax", input, model)
+
+class Slice(nn.Module):
+
+    def __init__(self):
+        super(Slice, self).__init__()
+
+    def forward(self, x):
+        return x[..., 1:-1, 0:3]
+
+input = Variable(torch.randn(1, 2, 4, 4))
+model = Slice()
+save_data_and_model("slice", input, model)
+
+class Eltwise(nn.Module):
+
+    def __init__(self):
+        super(Eltwise, self).__init__()
+
+    def forward(self, x):
+        return x + 2.7 * x
+
+input = Variable(torch.randn(1, 1, 2, 3, 4))
+model = Eltwise()
+save_data_and_model("eltwise3d", input, model)
+
+class InstanceNorm(nn.Module):
+
+    def __init__(self):
+        super(InstanceNorm, self).__init__()
+        self.inorm2 = nn.InstanceNorm2d(3, affine=True)
+
+    def forward(self, x):
+        x = self.inorm2(x)
+        return x
+
+input = Variable(torch.rand(1, 3, 4, 4))
+model = InstanceNorm()
+save_data_and_model("instancenorm", input, model)
+
+class PoolConv(nn.Module):
+
+    def __init__(self):
+        super(PoolConv, self).__init__()
+        self.pool = nn.MaxPool3d((3, 3, 3), stride=(2, 2, 2), padding=(1, 1, 1))
+        self.conv = nn.Conv3d(2, 2, kernel_size=3, stride=1, padding=1)
+
+    def forward(self, x):
+        x = self.pool(x)
+        y = self.conv(x)
+        return y
+
+input = Variable(torch.randn(1, 2, 4, 4, 19))
+model = PoolConv()
+save_data_and_model("pool_conv_3d", input, model)
+
+class Clip(nn.Module):
+
+    def __init__(self):
+        super(Clip, self).__init__()
+
+    def forward(self, x):
+        return torch.clamp(x, -0.1, 0.2)
+
+model = Clip()
+input = Variable(torch.rand(1, 10, 2, 2))
+save_data_and_model('clip', input, model)
+
+input = Variable(torch.randn(1, 3, 6, 6, 6))
+deconv = nn.ConvTranspose3d(3, 3, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(0, 0, 0), bias=False)
+save_data_and_model("deconv3d", input, deconv)
+
+input = Variable(torch.randn(1, 3, 5, 4, 4))
+deconv = nn.ConvTranspose3d(3, 5, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(0, 0, 0), bias=True)
+save_data_and_model("deconv3d_bias", input, deconv)
+
+input = Variable(torch.randn(1, 3, 5, 5, 5))
+deconv = nn.ConvTranspose3d(3, 2, kernel_size=(4, 3, 3), stride=(1, 1, 1), padding=(1, 0, 1), bias=True)
+save_data_and_model("deconv3d_pad", input, deconv)
+
+input = Variable(torch.randn(1, 3, 4, 5, 3))
+deconv = nn.ConvTranspose3d(3, 5, kernel_size=(2, 3, 1), stride=(2, 2, 2), padding=(1, 2, 1), output_padding=1, bias=True)
+save_data_and_model("deconv3d_adjpad", input, deconv)
+
+input = np.random.rand(1, 3, 4, 2)
+output = np.mean(input, axis=(2, 3), keepdims=True)
+save_onnx_data_and_model(input, output, 'reduce_mean', 'ReduceMean', axes=(2, 3), keepdims=True)
+
+input = np.random.rand(1, 3, 4, 2, 3)
+output = np.mean(input, axis=(3, 4), keepdims=True)
+save_onnx_data_and_model(input, output, 'reduce_mean3d', 'ReduceMean', axes=(3, 4), keepdims=True)
+
+class SplitMax(nn.Module):
+
+    def __init__(self):
+        super(SplitMax, self).__init__()
+
+    def forward(self, x):
+        first, second = torch.split(x, (2, 4), dim=1)
+        second, third = torch.split(second, (2, 2), dim=1)
+        return torch.max(first, torch.max(second, third))
+
+model = SplitMax()
+input = Variable(torch.randn(1, 6, 2, 3))
+save_data_and_model("split_max", input, model)
