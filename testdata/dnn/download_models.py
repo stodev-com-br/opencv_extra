@@ -39,22 +39,22 @@ class Model:
             return False
         print('  expect {}'.format(self.sha))
         sha = hashlib.sha1()
-        with open(self.filename, 'rb') as f:
-            while True:
-                buf = f.read(self.BUFSIZE)
-                if not buf:
-                    break
-                sha.update(buf)
-        print('  actual {}'.format(sha.hexdigest()))
-        return self.sha == sha.hexdigest()
-
-    def get(self):
         try:
-            if self.verify():
-                print('  hash match - skipping')
-                return True
+            with open(self.filename, 'rb') as f:
+                while True:
+                    buf = f.read(self.BUFSIZE)
+                    if not buf:
+                        break
+                    sha.update(buf)
+            print('  actual {}'.format(sha.hexdigest()))
+            return self.sha == sha.hexdigest()
         except Exception as e:
             print('  catch {}'.format(e))
+
+    def get(self):
+        if self.verify():
+            print('  hash match - skipping')
+            return True
 
         if self.archive or self.member:
             assert(self.archive and self.member)
@@ -72,14 +72,20 @@ class Model:
         return self.verify()
 
     def download(self):
-        r = urlopen(self.url)
-        self.printRequest(r)
-        self.save(r)
+        try:
+            r = urlopen(self.url, timeout=60)
+            self.printRequest(r)
+            self.save(r)
+        except Exception as e:
+            print('  catch {}'.format(e))
 
     def extract(self):
-        with tarfile.open(self.archive) as f:
-            assert self.member in f.getnames()
-            self.save(f.extractfile(self.member))
+        try:
+            with tarfile.open(self.archive) as f:
+                assert self.member in f.getnames()
+                self.save(f.extractfile(self.member))
+        except Exception as e:
+            print('  catch {}'.format(e))
 
     def save(self, r):
         with open(self.filename, 'wb') as f:
@@ -775,18 +781,29 @@ models = [
         url='https://www.dropbox.com/s/065l4vr8bptzohb/resnet-34_kinetics.onnx?dl=1',
         sha='88897629e4abb0fddef939f0c2d668a4edeb0788',
         filename='resnet-34_kinetics.onnx'),
+    Model(
+        name='Alexnet Facial Keypoints (ONNX)', # https://github.com/ismalakazel/Facial-Keypoint-Detection
+        url='https://drive.google.com/uc?export=dowload&id=1etGXT9WQK1KjDkJ0pUTH-CaHHva4p9cY',
+        sha='e1b82b56b59ab96b50189e1b39487d91d4fa0eea',
+        filename='onnx/models/facial_keypoints.onnx'),
+    Model(
+        name='LightWeight Human Pose Estimation (ONNX)', # https://github.com/Daniil-Osokin/lightweight-human-pose-estimation.pytorch
+        url='https://drive.google.com/uc?export=dowload&id=1T2Kq01WXzPMrQdnEOUEiVBhwouW8Pka5',
+        sha='20370164b8c43aa14625c0be4e31f62b9b397ac4',
+        filename='onnx/models/lightweight_pose_estimation.onnx'),
 ]
 
 # Note: models will be downloaded to current working directory
 #       expected working directory is opencv_extra/testdata/dnn
 if __name__ == '__main__':
-    failedSums = []
+    failedModels = []
     for m in models:
         print(m)
         if not m.get():
-            failedSums.append(m.filename)
-    if failedSums:
-        print("Checksum verification failed for:")
-        for f in failedSums:
+            failedModels.append(m.filename)
+
+    if failedModels:
+        print("Following models have not been downloaded:")
+        for f in failedModels:
             print("* {}".format(f))
         exit(15)
