@@ -84,7 +84,7 @@ def save(inp, out, name, quantize=False, optimize=True):
     # representation but the last one is indicated the end of encoding. This way
     # float16 might takes 1 or 2 or 3 bytes depends on value. To impove compression,
     # we replace all `half_val` values to `tensor_content` using only 2 bytes for everyone.
-    with tf.gfile.FastGFile(name + '_net.pb') as f:
+    with tf.gfile.FastGFile(name + '_net.pb', 'rb') as f:
         graph_def = tf.GraphDef()
         graph_def.ParseFromString(f.read())
         for node in graph_def.node:
@@ -288,6 +288,11 @@ inp = tf.placeholder(tf.float32, [2, 4, 5], 'input')
 flatten = tf.contrib.layers.flatten(inp)
 save(inp, flatten, 'flatten')
 ################################################################################
+inp = tf.placeholder(tf.float32, [2, 2, 2, 2, 3], 'input')
+conv = tf.layers.conv3d(inp, filters=2, kernel_size=[1, 1, 1], padding='SAME')
+concat = tf.concat([inp, conv], axis=-1)
+save(inp, concat, 'concat_3d')
+################################################################################
 # Generate test data for MobileNet-SSD object detection model from TensorFlow
 # model zoo, http://download.tensorflow.org/models/object_detection/ssd_mobilenet_v1_coco_11_06_2017.tar.gz
 # 1. Download and extract an archive
@@ -480,6 +485,10 @@ sess = K.backend.get_session()
 sess.as_default()
 save(sess.graph.get_tensor_by_name('keras_relu6_input:0'),
      sess.graph.get_tensor_by_name('keras_relu6/clip_by_value:0'), 'keras_relu6', optimize=False)
+################################################################################
+inp = tf.placeholder(tf.float32, [2, 3], 'input')
+max_node = tf.clip_by_value(inp, clip_value_min=0, clip_value_max=1)
+save(inp, max_node, 'clip_by_value')
 ################################################################################
 inp = tf.placeholder(tf.float32, [2, 3, 4, 5], 'input')
 reduced = tf.reduce_mean(inp, axis=[1, 2], keepdims=True)
@@ -850,9 +859,24 @@ pool = tf.layers.average_pooling2d(inp, pool_size=(2, 3), strides=1, padding='VA
 out = inp * pool
 save(inp, out, 'channel_broadcast', optimize=False)
 ################################################################################
+inp = tf.placeholder(tf.float32, [1, 2, 3, 4], 'input')
+resized = tf.image.resize_bilinear(inp, size=[3, 5], name='resize_bilinear', align_corners=True)
+conv = tf.layers.conv2d(resized, filters=4, kernel_size=[1, 1])
+save(inp, conv, 'fused_resize_conv')
+################################################################################
+# Uncomment to save model with dynamic shapes
+# inp = tf.placeholder(tf.float32, [1, None, None, 2], 'input')
+inp = tf.placeholder(tf.float32, [1, 9, 6, 2], 'input')
+conv = tf.layers.conv2d(inp, filters=2, kernel_size=[1, 1])
+shape_input = tf.shape(inp)
+hi = shape_input[1] / 3
+wi = shape_input[2] / 2
+input_down = tf.image.resize(conv, size=[hi,wi], method=0, name='resize_down')
+save(inp, input_down, 'resize_bilinear_down')
+################################################################################
 
 # Uncomment to print the final graph.
-# with tf.gfile.FastGFile('fused_batch_norm_net.pb') as f:
+# with tf.gfile.FastGFile('fused_batch_norm_net.pb', 'rb') as f:
 #     graph_def = tf.GraphDef()
 #     graph_def.ParseFromString(f.read())
-#     print graph_def
+#     print(graph_def)

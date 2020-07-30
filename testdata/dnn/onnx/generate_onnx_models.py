@@ -1,7 +1,9 @@
 from __future__ import print_function
 import torch
 from torch.autograd import Variable
+import torch.nn.init as init
 import torch.nn as nn
+import torch.nn.functional as F
 import numpy as np
 import os.path
 import onnx
@@ -293,6 +295,15 @@ if torch.__version__ == '1.4.0':
             nn.Upsample(scale_factor=2, mode='nearest')
             )
     save_data_and_model("resize_nearest_unfused_opset11_torch1.4", input, resize_nearest_unfused, 11)
+
+    input = Variable(torch.randn(1, 3, 4, 5))
+    resize_bilinear_unfused = nn.Sequential(
+            nn.Conv2d(3, 2, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(2),
+            nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True)
+            )
+    save_data_and_model("resize_bilinear_unfused_opset11_torch1.4", input, resize_bilinear_unfused, 11)
+
 
 if torch.__version__ == '1.2.0':
     input = Variable(torch.randn(1, 2, 3, 4))
@@ -680,3 +691,159 @@ save_data_and_model("lstm", input, lstm)
 input = Variable(torch.randn(seq_len, batch, features))
 lstm = LSTM(features, hidden, batch, bidirectional=True)
 save_data_and_model("lstm_bidirectional", input, lstm)
+
+class MatMul(nn.Module):
+    def __init__(self):
+        super(MatMul, self).__init__()
+
+    def forward(self, x):
+      axis = len(x.shape)
+      return x @ x.transpose(axis - 1, axis - 2)
+
+model = MatMul()
+x = Variable(torch.randn(2, 4))
+save_data_and_model("matmul_2d", x, model)
+
+x = Variable(torch.randn(3, 2, 4))
+save_data_and_model("matmul_3d", x, model)
+
+x = Variable(torch.randn(1, 3, 2, 4))
+save_data_and_model("matmul_4d", x, model)
+
+x = np.random.rand(1, 3, 2)
+output = np.mean(x, axis=1, keepdims=True)
+save_onnx_data_and_model(x, output, 'reduce_mean_axis1', 'ReduceMean', axes=(1), keepdims=True)
+
+x = np.random.rand(1, 3, 2)
+output = np.mean(x, axis=2, keepdims=True)
+save_onnx_data_and_model(x, output, 'reduce_mean_axis2', 'ReduceMean', axes=(2), keepdims=True)
+
+class Expand(nn.Module):
+    def __init__(self, shape):
+        super(Expand, self).__init__()
+        self.shape = shape
+
+    def forward(self, x):
+      return x.expand(self.shape)
+
+x = Variable(torch.randn(1, 1, 2, 2))
+model = Expand(shape=[2, 1, 2, 2])
+save_data_and_model("expand_batch", x, model)
+
+x = Variable(torch.randn(1, 1, 2, 2))
+model = Expand(shape=[1, 3, 2, 2])
+save_data_and_model("expand_channels", x, model)
+
+x = Variable(torch.randn(1, 2, 1, 1))
+model = Expand(shape=[1, 2, 3, 4])
+save_data_and_model("expand_hw", x, model)
+
+class NormL2(nn.Module):
+    def __init__(self):
+        super(NormL2, self).__init__()
+
+    def forward(self, x):
+      norm = torch.norm(x, p=2, dim=1, keepdim=True)
+      clip = torch.clamp(norm, min=0)
+      expand = clip.expand_as(x)
+      return x / expand
+
+model = NormL2()
+x = Variable(torch.randn(1, 2, 3, 4))
+save_data_and_model("reduceL2_subgraph", x, model)
+
+model = nn.ZeroPad2d(1)
+model.eval()
+input = torch.rand(1, 3, 2, 4)
+save_data_and_model("ZeroPad2d", input, model, version = 11)
+
+model = nn.ReflectionPad2d(1)
+model.eval()
+input = torch.rand(1, 3, 2, 4)
+save_data_and_model("ReflectionPad2d", input, model, version = 11)
+
+# source: https://github.com/amdegroot/ssd.pytorch/blob/master/layers/modules/l2norm.py
+class L2Norm(nn.Module):
+    def __init__(self,n_channels, scale):
+        super(L2Norm,self).__init__()
+        self.n_channels = n_channels
+        self.gamma = scale or None
+        self.eps = 1e-10
+        self.weight = nn.Parameter(torch.Tensor(self.n_channels))
+        self.reset_parameters()
+
+    def reset_parameters(self):
+        init.constant_(self.weight,self.gamma)
+
+    def forward(self, x):
+        norm = x.pow(2).sum(dim=1, keepdim=True).sqrt()+self.eps
+        #x /= norm
+        x = torch.div(x,norm)
+        out = self.weight.view(1, -1, 1, 1) * x
+        return x
+
+model = L2Norm(2, 20)
+x = Variable(torch.randn(1, 2, 3, 4))
+save_data_and_model("reduceL2_subgraph_2", x, model)
+
+from torchvision.ops.misc import *
+n = 3
+model = FrozenBatchNorm2d(n)
+model.eval()
+input = Variable(torch.rand( 1, 3, 2, 4 ))
+save_data_and_model("frozenBatchNorm2d", input, model)
+
+class UpsampleUnfusedTwoInput(nn.Module):
+
+    def __init__(self):
+        super(UpsampleUnfusedTwoInput, self).__init__()
+        self.conv1 = nn.Conv2d(3, 3, kernel_size=1, stride=1, padding=0)
+        self.conv2 = nn.Conv2d(3, 3, kernel_size=1, stride=1, padding=0)
+
+    def forward(self, x, y):
+        x = self.conv1(x)
+        x = x.shape[-2:]
+        y = self.conv2(y)
+        y = F.interpolate(y, size=x, mode="nearest")
+        return y
+
+input_0 = Variable(torch.randn(1, 3, 4, 6))
+input_1 = Variable(torch.randn(1, 3, 2, 2))
+model = UpsampleUnfusedTwoInput()
+save_data_and_model_multy_inputs("upsample_unfused_two_inputs_opset9_torch1.4", UpsampleUnfusedTwoInput(), input_0, input_1, version=9)
+save_data_and_model_multy_inputs("upsample_unfused_two_inputs_opset11_torch1.4", UpsampleUnfusedTwoInput(), input_0, input_1, version=11)
+
+ class FrozenBatchNorm2d(nn.Module):
+    def __init__(self, n):
+        super(FrozenBatchNorm2d, self).__init__()
+        self.register_buffer("weight", torch.ones(n))
+        self.register_buffer("bias", torch.zeros(n))
+        self.register_buffer("running_mean", torch.zeros(n))
+        self.register_buffer("running_var", torch.ones(n))
+
+    def forward(self, x):
+        scale = self.weight * self.running_var.rsqrt()
+        bias = self.bias - self.running_mean * scale
+        scale = scale.reshape(1, -1, 1, 1)
+        bias = bias.reshape(1, -1, 1, 1)
+        return x * scale + bias
+
+x = Variable(torch.randn(1, 2, 3, 4))
+model = FrozenBatchNorm2d(2)
+save_data_and_model("batch_norm_subgraph", x, model)
+
+ class GatherScalar(nn.Module):
+    def forward(self, x):
+        return x[1]
+
+x = Variable(torch.randn(2))
+model = GatherScalar()
+save_data_and_model("gather_scalar", x, model)
+
+ class Gather(nn.Module):
+    def forward(self, x):
+        return x[..., 1]
+
+x = Variable(torch.randn(2, 2, 2, 2))
+model = Gather()
+save_data_and_model("gather", x, model)
