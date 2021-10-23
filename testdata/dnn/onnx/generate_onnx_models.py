@@ -4,9 +4,13 @@ from torch.autograd import Variable, Function
 import torch.nn.init as init
 import torch.nn as nn
 import torch.nn.functional as F
+import tensorflow as tf # version 2.5.0
+import tf2onnx # version 1.9.1
+import paddle # version 2.1.1
 import numpy as np
 import os.path
 import onnx
+import onnxsim
 import google.protobuf.text_format
 import io
 
@@ -71,6 +75,14 @@ def save_onnx_data_and_model(input, output, name, operation, *args, **kwargs):
     model = onnx.helper.make_model(graph, producer_name=name)
     onnx.save(model, models_files)
 
+def simplify(name, rename=False, **kwargs):
+    model, check = onnxsim.simplify(name, **kwargs)
+    assert check, "couldn't valide"
+    name = name[:-5]
+    if rename:
+        name += '_optimized'
+    onnx.save(model, name + '.onnx')
+
 torch.manual_seed(0)
 np.random.seed(0)
 
@@ -126,6 +138,18 @@ input = Variable(torch.randn(1, 2, 10, 10))
 relu = nn.ReLU(inplace=True)
 save_data_and_model("ReLU", input, relu)
 
+class PReLU_slope(nn.Module):
+    def __init__(self, *args, **kwargs):
+        super(PReLU_slope, self).__init__()
+
+    def forward(self, x):
+        return nn.PReLU()(x)
+
+model = PReLU_slope()
+input_ = Variable(torch.randn(1, 1, 5, 5, dtype=torch.float32))
+save_data_and_model("PReLU_slope", input_, model, export_params=True)
+simplify('models/PReLU_slope.onnx', False)
+
 
 input = Variable(torch.randn(2, 3))
 dropout = nn.Dropout()
@@ -160,6 +184,24 @@ input = Variable(torch.randn(1, 2, 2, 2))
 model = Concatenation()
 model.eval()
 save_data_and_model("concatenation", input, model)
+
+
+class ConcatConstBlob(nn.Module):
+
+    def __init__(self):
+        super(ConcatConstBlob, self).__init__()
+        self.squeeze = nn.Conv2d(2, 2, kernel_size=1, stride=1, padding=0)
+
+    def forward(self, x):
+        x = self.squeeze(x)
+        y = torch.tensor([[[[0.1, -0.2], [-0.3, 0.4]]]], dtype=torch.float32)
+        return torch.cat([x, y], axis=1)
+
+
+input = Variable(torch.randn(1, 2, 2, 2))
+model = ConcatConstBlob()
+model.eval()
+save_data_and_model("concat_const_blob", input, model)
 
 
 class Mul(nn.Module):
@@ -325,6 +367,7 @@ input = Variable(torch.randn(1, 2, 3))
 model = Unsqueeze()
 model.eval()
 save_data_and_model("unsqueeze", input, model)
+save_data_and_model("unsqueeze_opset_13", input, model, version=13)
 
 input = Variable(torch.randn(1, 2, 4, 5))
 deconv_adjpad2d = nn.ConvTranspose2d(2, 3, (3, 2), stride=(1, 2), padding=(1, 2), output_padding=(0, 1))
@@ -378,16 +421,72 @@ save_data_and_model("log_softmax", input, model)
 
 class Slice(nn.Module):
 
-    def __init__(self):
+    def __init__(self, custom_slice=None):
+        self.custom_slice=custom_slice
         super(Slice, self).__init__()
 
     def forward(self, x):
+        if self.custom_slice:
+           return x[self.custom_slice]
+
         return x[..., 1:-1, 0:3]
 
 input = Variable(torch.randn(1, 2, 4, 4))
 model = Slice()
 save_data_and_model("slice", input, model)
 save_data_and_model("slice_opset_11", input, model, version=11)
+
+class SliceStarts(nn.Module):
+    def __init__(self, *args, **kwargs):
+        super(SliceStarts, self).__init__()
+
+    def forward(self, x):
+        return x[-1:]
+
+model = SliceStarts()
+input_ = Variable(torch.randn(1, 10, dtype=torch.float32))
+save_data_and_model("slice_neg_starts", input_, model)
+
+input_2 = Variable(torch.randn(6, 6))
+custom_slice_list = [
+    slice(1, 3, 1),
+    slice(0, 3, 2)
+]
+model_2 = Slice(custom_slice=custom_slice_list)
+save_data_and_model("slice_opset_11_steps_2d", input_2, model_2, version=11)
+postprocess_model("models/slice_opset_11_steps_2d.onnx", [['height', 'width']])
+
+input_3 = Variable(torch.randn(3, 6, 6))
+custom_slice_list_3 = [
+    slice(None, None, 2),
+    slice(None, None, 2),
+    slice(None, None, 2)
+]
+model_3 = Slice(custom_slice=custom_slice_list_3)
+save_data_and_model("slice_opset_11_steps_3d", input_3, model_3, version=11)
+postprocess_model("models/slice_opset_11_steps_3d.onnx", [[3, 'height', 'width']])
+
+input_4 = Variable(torch.randn(1, 3, 6, 6))
+custom_slice_list_4 = [
+    slice(0, 5, None),
+    slice(None, None, None),
+    slice(1, None, 2),
+    slice(None, None, None)
+]
+model_4 = Slice(custom_slice=custom_slice_list_4)
+save_data_and_model("slice_opset_11_steps_4d", input_4, model_4, version=11)
+postprocess_model("models/slice_opset_11_steps_4d.onnx", [["batch_size", 3, 'height', 'width']])
+
+input_5 = Variable(torch.randn(1, 2, 3, 6, 6))
+custom_slice_list_5 = [
+    slice(None, None, None),
+    slice(None, None, None),
+    slice(0, None, 3),
+    slice(None, None, None),
+    slice(None, None, 2)
+]
+model_5 = Slice(custom_slice=custom_slice_list_5)
+save_data_and_model("slice_opset_11_steps_5d", input_5, model_5, version=11)
 
 class Eltwise(nn.Module):
 
@@ -491,6 +590,35 @@ save_data_and_model("split_3", input, model)
 
 model = Split(dim=0, split_size_sections=[1, 1])
 save_data_and_model("split_4", input, model)
+
+class SplitSizes(nn.Module):
+    def __init__(self, *args, **kwargs):
+        super(SplitSizes, self).__init__()
+
+    def forward(self, x):
+        a, b, c, d = torch.split(x, [2, 3, 5, 10], 0)
+        a = torch.mul(a, 2)
+        b = torch.mul(b, 3)
+        c = torch.mul(c, 5)
+        d = torch.mul(d, 10)
+        tup = (a, b, c, d)
+        return torch.cat(tup)
+
+model = SplitSizes()
+input_ = Variable(torch.tensor(list(range(20)), dtype=torch.float32))
+save_data_and_model("split_sizes", input_, model)
+
+class SplitAxis(nn.Module):
+    def __init__(self, *args, **kwargs):
+        super(SplitAxis, self).__init__()
+
+    def forward(self, x):
+        tup = torch.split(x, 2, -1)
+        return torch.cat(tup, 1)
+
+model = SplitAxis()
+input_ = Variable(torch.randn(1, 10, dtype=torch.float32))
+save_data_and_model("split_neg_axis", input_, model)
 
 class SplitMax(nn.Module):
 
@@ -706,6 +834,56 @@ input = Variable(torch.randn(seq_len, batch, features))
 lstm = LSTM(features, hidden, batch, bidirectional=True)
 save_data_and_model("lstm_bidirectional", input, lstm)
 
+
+
+class HiddenLSTM(nn.Module):
+    def __init__(self, input_size, hidden_size, num_layers=1, is_bidirectional=False):
+        super().__init__()
+        self.hidden_size = hidden_size
+        self.num_layers = num_layers
+        self.bi_coeff = 2 if is_bidirectional else 1
+        self.lstm = nn.LSTM(input_size=input_size, hidden_size=hidden_size,
+                            num_layers=num_layers, bidirectional=is_bidirectional)
+
+    def forward(self, t):
+        h_0 = torch.ones(self.num_layers * self.bi_coeff, t.size(1),
+                         self.hidden_size)
+        c_0 = torch.ones(self.num_layers * self.bi_coeff, t.size(1),
+                         self.hidden_size)
+        return self.lstm(t, (h_0, c_0))[0]
+
+input = torch.randn(seq_len, batch, features)
+hidden_lstm = HiddenLSTM(features, hidden, num_layers=3, is_bidirectional=False)
+save_data_and_model("hidden_lstm", input, hidden_lstm, version=11, export_params=True)
+
+input = torch.randn(seq_len, batch, features)
+hidden_lstm = HiddenLSTM(features, hidden, num_layers=3, is_bidirectional=True)
+save_data_and_model("hidden_lstm_bi", input, hidden_lstm, version=11, export_params=True)
+
+
+class GRU(nn.Module):
+    def __init__(self, input_size, hidden_size, num_layers=2, is_bidirectional=False):
+        super().__init__()
+        self.hidden_size = hidden_size
+        self.num_layers = num_layers
+        self.bi_coeff = 2 if is_bidirectional else 1
+        self.gru = nn.GRU(input_size=input_size, hidden_size=hidden_size,
+                          num_layers=num_layers, bidirectional=is_bidirectional)
+
+    def forward(self, t):
+        h_0 = torch.ones(self.num_layers * self.bi_coeff, t.size(1),
+                         self.hidden_size)
+        return self.gru(t, h_0)[0]
+
+input = torch.randn(seq_len, batch, features)
+hidden_lstm = GRU(features, hidden, num_layers=3, is_bidirectional=False)
+save_data_and_model("gru", input, hidden_lstm, version=11, export_params=True)
+
+input = torch.randn(seq_len, batch, features)
+hidden_lstm = GRU(features, hidden, num_layers=3, is_bidirectional=True)
+save_data_and_model("gru_bi", input, hidden_lstm, version=11, export_params=True)
+
+
 class MatMul(nn.Module):
     def __init__(self):
         super(MatMul, self).__init__()
@@ -731,6 +909,32 @@ save_onnx_data_and_model(x, output, 'reduce_mean_axis1', 'ReduceMean', axes=(1),
 x = np.random.rand(1, 3, 2)
 output = np.mean(x, axis=2, keepdims=True)
 save_onnx_data_and_model(x, output, 'reduce_mean_axis2', 'ReduceMean', axes=(2), keepdims=True)
+
+class Expand(nn.Module):
+    def __init__(self):
+        super(Expand, self).__init__()
+
+    def forward(self, x):
+        return x.expand(1, 3, -1, -1, -1)
+
+input = Variable(torch.randn(1, 3, 2, 4))
+model = Expand()
+model.eval()
+save_data_and_model("expand", input, model, export_params=True, version=12)
+simplify('models/expand.onnx', False)
+
+class ExpandIdentity(nn.Module):
+    def __init__(self):
+        super(ExpandIdentity, self).__init__()
+
+    def forward(self, x):
+        return x.expand(1, 3, -1, -1)
+
+input = Variable(torch.randn(1, 3, 2, 4))
+model = ExpandIdentity()
+model.eval()
+save_data_and_model("expand_identity", input, model, export_params=True, version=12)
+simplify('models/expand_identity.onnx', False)
 
 class Expand(nn.Module):
     def __init__(self, shape):
@@ -799,6 +1003,23 @@ class L2Norm(nn.Module):
 model = L2Norm(2, 20)
 x = Variable(torch.randn(1, 2, 3, 4))
 save_data_and_model("reduceL2_subgraph_2", x, model)
+
+class reduceL2_subgraph2_2(nn.Module):
+    def __init__(self):
+        super(reduceL2_subgraph2_2, self).__init__()
+        self.size = torch.Size([1, 3, 2, 4])
+
+    def forward(self, x):
+        norm = torch.norm(x, p=2, dim=1, keepdim=True)
+        clip = torch.clamp(norm, min=0)
+        expand = clip.expand([1, 3, 2, 4])
+        return x / expand
+
+input = Variable(torch.randn(1, 3, 2, 4))
+model = reduceL2_subgraph2_2()
+model.eval()
+save_data_and_model("reduceL2_subgraph2_2", input, model, export_params=True, version=12)
+simplify('models/reduceL2_subgraph2_2.onnx', False)
 
 from torchvision.ops.misc import *
 n = 3
@@ -966,6 +1187,155 @@ x = Variable(torch.randn(2, 2))
 model = Exp()
 save_data_and_model("exp", x, model)
 
+class Ceil(nn.Module):
+    def __init__(self):
+        super(Ceil, self).__init__()
+
+    def forward(self, x):
+        return torch.ceil(x)
+
+model = Ceil()
+input = Variable(torch.randn(1, 2, 3, 4, dtype=torch.float32))
+save_data_and_model("ceil", input, model, version = 11)
+
+class Floor(nn.Module):
+    def __init__(self):
+        super(Floor, self).__init__()
+
+    def forward(self, x):
+        return torch.floor(x)
+
+model = Floor()
+input = Variable(torch.randn(1, 2, 3, 4, dtype=torch.float32))
+save_data_and_model("floor", input, model, version = 11)
+
+class Log(nn.Module):
+    def __init__(self):
+        super(Log, self).__init__()
+
+    def forward(self, x):
+        return torch.log(torch.abs(x + 0.1))
+
+model = Log()
+input = Variable(torch.randn(1, 2, 3, 4, dtype=torch.float32))
+save_data_and_model("log", input, model, version = 11)
+
+class Round(nn.Module):
+    def __init__(self):
+        super(Round, self).__init__()
+
+    def forward(self, x):
+        return torch.round(x)
+
+model = Round()
+input = Variable(torch.tensor([[-1.5, -1., -0.9, -0.5, -0.4, 0., 0.4, 0.5, 0.9, 1, 1.5]]))
+save_data_and_model("round", input, model, version = 11)
+
+class Sqrt(nn.Module):
+
+    def __init__(self):
+        super(Sqrt, self).__init__()
+
+    def forward(self, a):
+        return torch.sqrt(torch.FloatTensor.abs(a))
+
+a = Variable(torch.randn(1, 3, 2, 2))
+model = Sqrt()
+save_data_and_model("sqrt", a, model)
+
+class Equal(nn.Module):
+
+    def __init__(self):
+        super(Equal, self).__init__()
+        self.conv = nn.Conv2d(3, 3, kernel_size=1, stride=1, padding=0)
+
+    def forward(self, x):
+        x = self.conv(x)
+        return (x == 0.5)*x
+
+model = Equal()
+input = Variable(torch.rand(1, 3, 4, 5))
+save_data_and_model("equal", input, model, version = 11, export_params=True)
+
+class EqualSameDims(nn.Module):
+
+    def __init__(self):
+        super(EqualSameDims, self).__init__()
+        self.conv = nn.Conv2d(3, 3, kernel_size=1, stride=1, padding=0)
+
+    def forward(self, x1, x2):
+        x1 = self.conv(x1)
+        x2 = self.conv(x2)
+        x1 = x1 == x2
+        return x2*x1
+
+model = EqualSameDims()
+input1 = Variable(torch.rand(1, 3, 4, 5))
+input2 = Variable(torch.rand(1, 3, 4, 5))
+save_data_and_model_multy_inputs("equal_same_dims", model, input1, input2, export_params=True)
+
+class Less(nn.Module):
+
+    def __init__(self):
+        super(Less, self).__init__()
+        self.conv = nn.Conv2d(3, 3, kernel_size=1, stride=1, padding=0)
+
+    def forward(self, x):
+        x = self.conv(x)
+        return (x < 0.7)*x
+
+model = Less()
+input = Variable(torch.rand(1, 3, 4, 5))
+save_data_and_model("less", input, model, version = 11, export_params=True)
+
+class LessSameDims(nn.Module):
+
+    def __init__(self):
+        super(LessSameDims, self).__init__()
+        self.conv = nn.Conv2d(3, 3, kernel_size=1, stride=1, padding=0)
+
+    def forward(self, x1, x2):
+        x1 = self.conv(x1)
+        x2 = self.conv(x2)
+        x1 = x1 < x2
+        return x2*x1
+
+model = LessSameDims()
+input1 = Variable(torch.rand(1, 3, 4, 5))
+input2 = Variable(torch.rand(1, 3, 4, 5))
+save_data_and_model_multy_inputs("less_same_dims", model, input1, input2, export_params=True)
+
+class Greater(nn.Module):
+
+    def __init__(self):
+        super(Greater, self).__init__()
+        self.conv = nn.Conv2d(3, 3, kernel_size=1, stride=1, padding=0)
+
+    def forward(self, x):
+        x = self.conv(x)
+        return (x > 0.5)*x
+
+model = Greater()
+input = Variable(torch.rand(1, 3, 4, 5))
+save_data_and_model("greater", input, model, version = 11, export_params=True)
+
+class GreaterSameDims(nn.Module):
+
+    def __init__(self):
+        super(GreaterSameDims, self).__init__()
+        self.conv = nn.Conv2d(3, 3, kernel_size=1, stride=1, padding=0)
+
+    def forward(self, x1, x2):
+        x1 = self.conv(x1)
+        x2 = self.conv(x2)
+        x1 = x1 > x2
+        return x2*x1
+
+model = GreaterSameDims()
+input1 = Variable(torch.rand(1, 3, 4, 5))
+input2 = Variable(torch.rand(1, 3, 4, 5))
+save_data_and_model_multy_inputs("greater_same_dims", model, input1, input2, export_params=True)
+
 class ReduceMaxGlobal(nn.Module):
   def forward(self, x):
     out = torch.max(x)
@@ -992,6 +1362,19 @@ save_data_and_model("reduce_max_axis_0", x, model)
 
 model = ReduceMax(axes=1)
 save_data_and_model("reduce_max_axis_1", x, model)
+
+class Min(nn.Module):
+    def __init__(self, *args, **kwargs):
+        super(Min, self).__init__()
+
+    def forward(self, a, b):
+        return torch.min(a, b)
+
+model = Min()
+input_0 = Variable(torch.randn(2, 3, 4, 5, dtype=torch.float32))
+input_1 = Variable(torch.randn(2, 3, 4, 5, dtype=torch.float32))
+save_data_and_model_multy_inputs("min", model, input_0, input_1, export_params=True)
+simplify('models/min.onnx', False)
 
 class ResizeConv(nn.Module):
     def __init__(
@@ -1026,6 +1409,31 @@ class Scale(nn.Module):
 x = Variable(torch.randn(1, 3, 2, 2))
 model = Scale()
 save_data_and_model("scale", x, model)
+
+class ScaleBroadcast(nn.Module):
+    def __init__(self, *args, **kwargs):
+        super(ScaleBroadcast, self).__init__()
+
+    def forward(self, x0, x1, x2):
+        return torch.mul(torch.mul(x0, x1), x2)
+
+model = ScaleBroadcast()
+input_0 = Variable(torch.ones(2, 1, 4, 5, dtype=torch.float32))
+input_1 = Variable(torch.ones(1, 4, 1, dtype=torch.float32))
+input_2 = Variable(torch.ones(2, 1, 4, 1, dtype=torch.float32))
+save_data_and_model_multy_inputs("scale_broadcast", model, input_0, input_1, input_2)
+
+class ScaleBroadcastMid(nn.Module):
+    def __init__(self, *args, **kwargs):
+        super(ScaleBroadcastMid, self).__init__()
+
+    def forward(self, x0, x1):
+        return torch.mul(x0, x1)
+
+model = ScaleBroadcastMid()
+input_0 = Variable(torch.ones(2, 1, 4, dtype=torch.float32))
+input_1 = Variable(torch.ones(2, 5, 4, dtype=torch.float32))
+save_data_and_model_multy_inputs("scale_broadcast_mid", model, input_0, input_1)
 
 x = Variable(torch.randn(1, 3, 25))
 conv1d = nn.Conv1d(3, 2, kernel_size=3, padding=2, stride=2, dilation=2, bias=False)
@@ -1178,6 +1586,19 @@ input = Variable(torch.randn(1, 3, 7, 5))
 save_data_and_model("average_pooling_dynamic_axes", input, ave_pool)
 postprocess_model("models/average_pooling_dynamic_axes.onnx", [[1, 3, 'height', 'width']])
 
+class DynamicBatch(nn.Module):
+    def __init__(self, *args, **kwargs):
+        super(DynamicBatch, self).__init__()
+        self.pool = nn.MaxPool2d(2, stride=2)
+
+    def forward(self, x):
+        return torch.cat((self.pool(x), torch.ones(2, 3, 1, 2)))
+
+model = DynamicBatch()
+input_ = Variable(torch.ones(2, 3, 3, 4, dtype=torch.float32))
+save_data_and_model("dynamic_batch", input_, model, export_params=True)
+postprocess_model("models/dynamic_batch.onnx", [['batch_size', 3, 3, 4]])
+
 x = Variable(torch.randn(1, 3, 10))
 max_pool = nn.MaxPool1d(kernel_size=(5), stride=1, padding=2, dilation=1)
 save_data_and_model("maxpooling_1d", x, max_pool)
@@ -1266,3 +1687,115 @@ class NormalizeFusion(nn.Module):
 x = Variable(torch.randn([2, 3]))
 model = NormalizeFusion()
 save_data_and_model("normalize_fusion", x, model)
+
+class CumSum(nn.Module):
+    def __init__(self, dim):
+        super(CumSum, self).__init__()
+        self._dim = dim
+
+    def forward(self, x):
+        return torch.cumsum(x, self._dim)
+
+x = torch.randn(2, 3)
+save_data_and_model("cumsum_2d_dim_1", x, CumSum(dim=1), version=11)
+
+x = torch.randn(2, 3, 4)
+save_data_and_model("cumsum_3d_dim_2", x, CumSum(dim=2), version=11)
+
+# tf2onnx models
+def save_data_and_tf_function(tf_function, name, input):
+    input = input.astype(np.float32)
+    np.save(os.path.join("data", "input_" + name + ".npy"), input)
+    output = tf_function(input)
+    np.save(os.path.join("data", "output_" + name + ".npy"), output)
+    cumsum_model = tf2onnx.convert.from_function(
+        function=tf_function,
+        input_signature=[tf.TensorSpec([], tf.float32)],
+        opset=14)[0]
+    onnx.save(cumsum_model, os.path.join("models", name + ".onnx"))
+
+x = np.random.rand(3)
+
+@tf.function
+def cumsum_exclusive_1d(x):
+    return tf.cumsum(x, exclusive=True, reverse=False)
+
+save_data_and_tf_function(cumsum_exclusive_1d, "cumsum_1d_exclusive_1", x)
+
+@tf.function
+def cumsum_reverse(x):
+    return tf.cumsum(x, exclusive=False, reverse=True)
+
+save_data_and_tf_function(cumsum_reverse, "cumsum_1d_reverse", x)
+
+@tf.function
+def cumsum_exclusive_1d_reverse(x):
+    return tf.cumsum(x, exclusive=True, reverse=True)
+
+save_data_and_tf_function(cumsum_exclusive_1d_reverse, "cumsum_1d_exclusive_1_reverse", x)
+
+x = np.random.rand(1, 2, 3, 4)
+
+@tf.function
+def Not(x):
+    return tf.cast(tf.math.logical_not(tf.math.less(x, 0.5)), tf.float32)
+
+save_data_and_tf_function(Not, "not", x)
+
+#paddle2onnx model
+class Resize_HumanSeg(paddle.nn.Layer):
+    def __init__(self, ):
+        super(Resize_HumanSeg, self).__init__()
+
+    def forward(self, x0):
+        x1 = paddle.nn.functional.interpolate(x0,size=[6,8],mode='bilinear',align_corners=False)
+        return x1
+
+def save_data_and_paddle_model(model, name, input_data):
+    model.eval()
+    np.save(os.path.join("data", "input_" + name + ".npy"), input_data.numpy())
+    output = model(input_data)
+    np.save(os.path.join("data", "output_" + name + ".npy"), output.numpy())
+    inputs = [paddle.static.InputSpec(shape=input_data.shape, dtype="float32")]
+    paddle.onnx.export(model, "models/" + name,
+                       input_spec=inputs,
+                       opset_version=11)
+
+input_shape = [1, 2, 3, 4]
+x = paddle.rand(input_shape, dtype="float32")
+save_data_and_paddle_model(Resize_HumanSeg(), "resize_humanseg", x)
+
+class SubFromConstBroadcast(nn.Module):
+    def __init__(self, *args, **kwargs):
+        super(SubFromConstBroadcast, self).__init__()
+        self.const = torch.randn(1, 3, dtype=torch.float32)
+
+    def forward(self, x):
+        return self.const - x
+
+model = SubFromConstBroadcast()
+input_ = Variable(torch.randn(2, 3, dtype=torch.float32))
+save_data_and_model("sub_from_const_broadcast", input_, model)
+
+class SubFromConstEltWise(nn.Module):
+    def __init__(self, *args, **kwargs):
+        super(SubFromConstEltWise, self).__init__()
+        self.const = torch.randn(1, 2, 3, 4, dtype=torch.float32)
+
+    def forward(self, x):
+        return self.const - x
+
+model = SubFromConstEltWise()
+input_ = Variable(torch.randn(1, 2, 3, 4, dtype=torch.float32))
+save_data_and_model("sub_from_const_eltwise", input_, model)
+
+class SubFromConst1(nn.Module):
+    def __init__(self, *args, **kwargs):
+        super(SubFromConst1, self).__init__()
+
+    def forward(self, x):
+        return 1 - x
+
+model = SubFromConst1()
+input_ = Variable(torch.randn(1, 2, 3, 4, dtype=torch.float32))
+save_data_and_model("sub_from_const1", input_, model)

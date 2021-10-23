@@ -416,6 +416,16 @@ conv2 = tf.layers.conv2d(inp, filters=4, kernel_size=1)
 out = tf.reshape(conv2, [1, 2, 3, 6], 'reshaped')
 save(inp, out, 'reshape_nchw')
 ################################################################################
+inp = tf.placeholder(tf.float32, [1, 5, 5, 3], 'input')
+out = tf.keras.layers.MaxPool2D((2, 2), 4, "SAME", name='pooling')(inp)
+reshape = tf.reshape(out, [-1, 1, 1, 12], 'reshaped')
+conv_filter = tf.get_variable('filter', [1, 1, 12, 4],
+                              initializer=tf.truncated_normal_initializer(),
+                              dtype=tf.float32)
+conv = tf.nn.conv2d(input=reshape, filters=conv_filter, strides=[1, 1, 1, 1],
+                    padding='SAME', name='conv2d')
+save(inp, conv, 'reshape_conv')
+################################################################################
 inp = tf.placeholder(tf.float32, [1, 6, 5, 3], 'input')
 conv = tf.layers.conv2d(inputs=inp, filters=3, kernel_size=[1, 1],
                         activation=tf.nn.relu,
@@ -562,12 +572,36 @@ reduced = tf.reduce_mean(inp, axis=[1, 2], keepdims=True)
 save(inp, reduced, 'reduce_mean')
 ################################################################################
 inp = tf.placeholder(tf.float32, [2, 3, 4, 5], 'input')
+reduced = tf.reduce_max(inp, axis=[1, 2], keepdims=True)
+save(inp, reduced, 'reduce_max')
+################################################################################
+inp = tf.placeholder(tf.float32, [1, 2, 2, 4], 'ReduceMax')
+out = tf.reduce_max([inp, inp * 2], axis=0)
+save(inp, out, 'max_pool_by_axis')
+################################################################################
+inp = tf.placeholder(tf.float32, [1, 4, 2, 3], 'input')
+out = tf.math.reduce_max(inp, axis=-1)
+save(inp, out, 'reduce_max_channel')
+################################################################################
+inp = tf.placeholder(tf.float32, [1, 4, 2, 3], 'input')
+out = tf.math.reduce_max(inp, axis=-1, keep_dims=True)
+save(inp, out, ('reduce_max_channel', 'keep_dims'), is_gen_data=False)
+################################################################################
+inp = tf.placeholder(tf.float32, [2, 3, 4, 5], 'input')
 reduced = tf.reduce_sum(inp, axis=[1, 2], keepdims=True)
 save(inp, reduced, 'reduce_sum')
 ################################################################################
 inp = tf.placeholder(tf.float32, [2, 3, 4, 5], 'input')
 reduced = tf.reduce_sum(inp, axis=[2], keepdims=False)
 save(inp, reduced, 'sum_pool_by_axis')
+################################################################################
+inp = tf.placeholder(tf.float32, [1, 4, 2, 3], 'input')
+out = tf.math.reduce_sum(inp, axis=-1)
+save(inp, out, 'reduce_sum_channel')
+################################################################################
+inp = tf.placeholder(tf.float32, [1, 4, 2, 3], 'input')
+out = tf.math.reduce_sum(inp, axis=-1, keep_dims=True)
+save(inp, out, ('reduce_sum_channel', 'keep_dims'), is_gen_data=False)
 ################################################################################
 inp = tf.placeholder(tf.float32, [2, 3, 4, 5], 'input')
 pool = tf.layers.average_pooling2d(inp, pool_size=1, strides=1, padding='SAME')
@@ -786,6 +820,18 @@ conv = tf.layers.conv2d(inp, filters=5, kernel_size=[1, 1],
 sub = conv - inp
 save(inp, sub, 'eltwise_sub')
 ################################################################################
+inp = tf.placeholder(tf.float32, [1, 5, 5, 10], 'input')
+out1 = tf.keras.layers.MaxPool2D((2, 2), 5, "SAME", name="pooling")(inp)
+out2 = tf.keras.layers.ReLU(name="relu")(inp)
+final_out = tf.math.add(out1, out2, name='tf_sum')
+save(inp, final_out, 'eltwise_add_vec')
+################################################################################
+inp = tf.placeholder(tf.float32, [1, 4, 4, 3], 'input')
+out1 = tf.keras.layers.MaxPool2D((2, 2), 4, "SAME", name="pooling")(inp)
+out2 = tf.keras.layers.ReLU(name="relu")(inp)
+final_out = tf.keras.layers.Multiply(name='tf_mul')([out1, out2])
+save(inp, final_out, 'eltwise_mul_vec')
+################################################################################
 inp = tf.placeholder(tf.float32, [None, 2, 3, 4], 'input')
 conv = tf.layers.conv2d(inp, filters=3, kernel_size=[1, 1])
 softmax = tf.contrib.slim.softmax(conv)
@@ -972,6 +1018,29 @@ hi = shape_input[1] / 3
 wi = shape_input[2] / 2
 input_down = tf.image.resize(conv, size=[hi, wi], method=0, name='resize_down')
 save(inp, input_down, 'resize_bilinear_down')
+################################################################################
+inp = tf.placeholder(tf.float32, [1, None, None, 3], 'input')
+biased = tf.nn.bias_add(inp, [1, 2, 3], data_format='NHWC')
+resized1 = tf.image.resize(biased, [5, 6])
+concat = tf.concat([resized1, biased], 3)
+# blob = np.random.standard_normal([1, 5, 6, 3]).astype(tf.float32.as_numpy_dtype())
+# writeBlob(blob, 'resize_concat_optimization_in')
+save(inp, concat, 'resize_concat_optimization', optimize=False, is_gen_data=False)
+################################################################################
+inp = tf.placeholder(tf.float32, [1, 2, 3, 4], 'input')
+sub = inp - 3.0
+sub = 4.0 + sub
+save(inp, sub, prefix + 'bias_add_1', optimize=False)
+################################################################################
+inp = tf.placeholder(tf.float32, [1, 2, 3, 4], 'input')
+expand_dim = inp + 1
+expand_dim = tf.expand_dims(expand_dim, -2)
+save(inp, expand_dim, prefix + 'expand_dims_1', optimize=False)
+################################################################################
+inp = tf.placeholder(tf.float32, [1, 2, 3, 4, 5], 'input')
+expand_dim = inp + 1
+expand_dim = tf.expand_dims(expand_dim, 2)
+save(inp, expand_dim, prefix + 'expand_dims_2', optimize=False)
 ################################################################################
 
 # Uncomment to print the final graph.
