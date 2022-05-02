@@ -436,16 +436,49 @@ model = Slice()
 save_data_and_model("slice", input, model)
 save_data_and_model("slice_opset_11", input, model, version=11)
 
-class SliceStarts(nn.Module):
-    def __init__(self, *args, **kwargs):
-        super(SliceStarts, self).__init__()
+def generate_slice_neg_starts():
+    x = np.random.randn(2, 3, 4, 3).astype(np.float32)
+    y = x[-1:2, -3:-1, 2:3, 1:-1]
 
-    def forward(self, x):
-        return x[-1:]
+    starts = np.array([-1, -3, 2,  1], dtype=np.int64)
+    starts = onnx.numpy_helper.from_array(starts, name='starts')
+    ends =   np.array([ 2, -1, 3, -1], dtype=np.int64)
+    ends =   onnx.numpy_helper.from_array(ends, name='ends')
 
-model = SliceStarts()
-input_ = Variable(torch.randn(1, 10, dtype=torch.float32))
-save_data_and_model("slice_neg_starts", input_, model)
+    node = onnx.helper.make_node(
+        'Slice',
+        inputs=['X', 'starts', 'ends'],
+        outputs=['Y'],
+    )
+
+    X = onnx.helper.make_tensor_value_info('X', onnx.TensorProto.FLOAT, list(x.shape))
+    Y = onnx.helper.make_tensor_value_info('Y', onnx.TensorProto.FLOAT, list(y.shape))
+
+    graph = onnx.helper.make_graph(
+        [node],             # nodes
+        'slice_neg_starts', # name
+        [X],                # inputs
+        [Y],                # outputs
+    )
+
+    graph.initializer.append(starts)
+    graph.initializer.append(ends)
+
+    model = onnx.helper.make_model(graph, producer_name='onnx')
+    onnx.checker.check_model(model)
+
+    name = 'slice_neg_starts'
+
+    input_files = os.path.join("data", "input_" + name)
+    np.save(input_files, x.data)
+
+    output_files =  os.path.join("data", "output_" + name)
+    np.save(output_files, np.ascontiguousarray(y.data))
+
+    models_files = os.path.join("models", name + ".onnx")
+    onnx.save(model, models_files)
+
+generate_slice_neg_starts()
 
 input_2 = Variable(torch.randn(6, 6))
 custom_slice_list = [
@@ -783,6 +816,7 @@ model = DynamicResize()
 save_data_and_model_multy_inputs("dynamic_resize_9", model, input_0, input_1, version=9)
 save_data_and_model_multy_inputs("dynamic_resize_10", model, input_0, input_1, version=10)
 save_data_and_model_multy_inputs("dynamic_resize_11", model, input_0, input_1, version=11)
+save_data_and_model_multy_inputs("dynamic_resize_13", model, input_0, input_1, version=13)
 
 class DynamicResizeScale(nn.Module):
     def forward(self, x, y):
@@ -795,6 +829,19 @@ model = DynamicResizeScale()
 save_data_and_model_multy_inputs("dynamic_resize_scale_9", model, input_0, input_1, version=9, export_params=True)
 save_data_and_model_multy_inputs("dynamic_resize_scale_10", model, input_0, input_1, version=10, export_params=True)
 save_data_and_model_multy_inputs("dynamic_resize_scale_11", model, input_0, input_1, version=11, export_params=True)
+save_data_and_model_multy_inputs("dynamic_resize_scale_13", model, input_0, input_1, version=13, export_params=True)
+
+class Resize(nn.Module):
+    def __init__(self, *args, **kwargs):
+        super(Resize, self).__init__()
+
+    def forward(self, x):
+        return F.interpolate(input, [12, 12], mode="bilinear", align_corners=True)
+
+input = Variable(torch.randn(1, 2, 6, 6))
+model = Resize(input)
+save_data_and_model("resize_size_opset11", input, model, 11)
+save_data_and_model("resize_size_opset13", input, model, 13)
 
 class ShapeConst(nn.Module):
     def __init__(self):
@@ -882,6 +929,39 @@ save_data_and_model("gru", input, hidden_lstm, version=11, export_params=True)
 input = torch.randn(seq_len, batch, features)
 hidden_lstm = GRU(features, hidden, num_layers=3, is_bidirectional=True)
 save_data_and_model("gru_bi", input, hidden_lstm, version=11, export_params=True)
+
+
+batch = 5
+features = 4
+hidden = 3
+seq_len = 2
+num_layers=1
+bidirectional=True
+
+class LSTM(nn.Module):
+
+    def __init__(self):
+        super(LSTM, self).__init__()
+        self.lstm = nn.LSTM(features, hidden, num_layers, bidirectional=bidirectional)
+        self.h0 = torch.from_numpy(np.ones((num_layers + int(bidirectional), batch, hidden), dtype=np.float32))
+        self.c0 = torch.from_numpy(np.ones((num_layers + int(bidirectional), batch, hidden), dtype=np.float32))
+
+    def forward(self, x):
+        a, (b, c) = self.lstm(x, (self.h0, self.c0))
+        if bidirectional:
+            return torch.cat((a, b, c), dim=2)
+        else:
+            return torch.cat((a, b, c), dim=0)
+
+
+input_ = Variable(torch.randn(seq_len, batch, features))
+lstm = LSTM()
+save_data_and_model("lstm_cell_bidirectional", input_, lstm, export_params=True)
+
+bidirectional = False
+input_ = Variable(torch.randn(seq_len, batch, features))
+lstm = LSTM()
+save_data_and_model("lstm_cell_forward", input_, lstm, export_params=True)
 
 
 class MatMul(nn.Module):
@@ -1799,3 +1879,51 @@ class SubFromConst1(nn.Module):
 model = SubFromConst1()
 input_ = Variable(torch.randn(1, 2, 3, 4, dtype=torch.float32))
 save_data_and_model("sub_from_const1", input_, model)
+
+class ArgMax(nn.Module):
+    def __init__(self, *args, **kwargs):
+        super(ArgMax, self).__init__()
+
+    def forward(self, x):
+        return torch.argmax(x, dim=2, keepdims=False).to(torch.float32)
+
+model = ArgMax()
+input_ = Variable(torch.randn(2, 3, 4, 5, dtype=torch.float32))
+save_data_and_model("argmax", input_, model)
+
+class ArgMin(nn.Module):
+    def __init__(self, *args, **kwargs):
+        super(ArgMin, self).__init__()
+
+    def forward(self, x):
+        return torch.argmin(x, dim=-1, keepdims=True).to(torch.float32)
+
+model = ArgMin()
+input_ = Variable(torch.randn(2, 3, 4, 5, dtype=torch.float32))
+save_data_and_model("argmin", input_, model)
+
+########################## const / x ##########################
+
+node = onnx.helper.make_node('Div', inputs=['x', 'y'], outputs=['z'])
+
+x = np.array([2]).astype(np.float32)
+y = np.array([[4, 4], [4, 4]]).astype(np.float32)
+name = 'div_const'
+input_files = os.path.join("data", "input_" + name)
+np.save(input_files, x.data)
+np.save(input_files, y.data)
+
+z = (x / y).astype(np.float32)
+output_files =  os.path.join("data", "output_" + name)
+np.save(output_files, np.ascontiguousarray(z.data))
+
+X = onnx.helper.make_tensor('x', onnx.TensorProto.FLOAT, x.shape, x)
+Y = onnx.helper.make_tensor_value_info('y', onnx.TensorProto.FLOAT, y.shape)
+Z = onnx.helper.make_tensor_value_info('z', onnx.TensorProto.FLOAT, z.shape)
+
+graph = onnx.helper.make_graph([node], 'div_const', [Y], [Z], initializer=[X])
+model = onnx.helper.make_model(graph, producer_name=name)
+models_files = os.path.join("models", name + ".onnx")
+onnx.save(model, models_files)
+
+########################## const / x ##########################
