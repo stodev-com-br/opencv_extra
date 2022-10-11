@@ -952,6 +952,54 @@ models = [
         url='https://drive.google.com/uc?export=dowload&id=1ClK9WiB492c5OZFKveF3XiHCejoOxINW',
         sha='12ff8b1f5c8bff62e8dd91eabdacdfc998be255e',
         filename='onnx/models/face_recognizer_fast.onnx'),
+    Model(
+        name='MobileNetv2 FP16 (ONNX)',
+        url='https://github.com/zihaomu/zihaomu/files/9393786/mobilenetv2_fp16_v7.tar.gz',
+        sha='018d42b1b1283e6025a0455deffe9f0e9930e839',
+        filename='mobilenetv2_fp16_v7.tar.gz'),
+    Model(
+        name='MobileNetv2 FP16 (ONNX)',
+        archive='mobilenetv2_fp16_v7.tar.gz',
+        member='mobilenetv2_fp16_v7/mobilenetv2_fp16.onnx',
+        sha='ab9352de8e07b798417922f23e97c8488bd50017',
+        filename='onnx/models/mobilenetv2_fp16.onnx'),
+    Model(
+        name='MobileNetv2 FP16 (ONNX)',
+        archive='mobilenetv2_fp16_v7.tar.gz',
+        member='mobilenetv2_fp16_v7/input_mobilenetv2_fp16.npy',
+        sha='cbb97c31abc07ff8c68f5028c634d79f8b83b560',
+        filename='onnx/data/input_mobilenetv2_fp16.npy'),
+    Model(
+        name='MobileNetv2 FP16 (ONNX)',
+        archive='mobilenetv2_fp16_v7.tar.gz',
+        member='mobilenetv2_fp16_v7/output_mobilenetv2_fp16.npy',
+        sha='397560616c47b847340cec9561e12a13b29ae32e',
+        filename='onnx/data/output_mobilenetv2_fp16.npy'),
+    Model(
+        name='wechat_qr_detect',
+        url='https://raw.githubusercontent.com/WeChatCV/opencv_3rdparty/wechat_qrcode/detect.prototxt',
+        sha='a6936962139282d300ebbf15a54c2aa94b144bb7',
+        filename='wechat_2021-01/detect.prototxt'),
+    Model(
+        name='wechat_qr_detect',
+        url='https://raw.githubusercontent.com/WeChatCV/opencv_3rdparty/wechat_qrcode/detect.caffemodel',
+        sha='d587623a055cbd58a648de62a8c703c7abb05f6d',
+        filename='wechat_2021-01/detect.caffemodel'),
+    Model(
+        name='wechat_super_resolution',
+        url='https://raw.githubusercontent.com/WeChatCV/opencv_3rdparty/wechat_qrcode/sr.prototxt',
+        sha='39e1f1031c842766f1cc126615fea8e8256facd2',
+        filename='wechat_2021-01/sr.prototxt'),
+    Model(
+        name='wechat_super_resolution',
+        url='https://raw.githubusercontent.com/WeChatCV/opencv_3rdparty/wechat_qrcode/sr.caffemodel',
+        sha='2b181b55d1d7af718eaca6cabdeb741217b64c73',
+        filename='wechat_2021-01/sr.caffemodel'),
+    Model(
+        name='yolov7_not_simplified',
+        downloader=GDrive('1rm3mIqjJNu0xPTCjMKnXccspazV1B2zv'),
+        sha='fcd0fa401c83bf2b29e18239a9c2c989c9b8669d',
+        filename='onnx/models/yolov7_not_simplified.onnx'),
 ]
 
 # Note: models will be downloaded to current working directory
