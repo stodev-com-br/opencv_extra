@@ -689,6 +689,41 @@ input = Variable(torch.randn(1, 2, 4, 4, 19))
 model = PoolConv()
 save_data_and_model("pool_conv_3d", input, model)
 
+class DepthWiseAdd(nn.Module):
+
+    def __init__(self):
+        super(DepthWiseAdd, self).__init__()
+        self.dconv1 = nn.Conv2d(8, 8, kernel_size=3, stride=1, padding=0, groups=8)
+        self.dconv2 = nn.Conv2d(8, 8, kernel_size=3, stride=1, padding=0, groups=8)
+
+    def forward(self, x):
+        a = self.dconv1(x)
+        b = self.dconv2(x)
+        z = a + b
+        z = z * 2
+        return z
+
+
+input = Variable(torch.randn(1, 8, 32, 32))
+model = DepthWiseAdd()
+model.eval()
+save_data_and_model("depthwiseconv_add", input, model)
+
+class DepthWiseStride2(nn.Module):
+
+    def __init__(self):
+        super(DepthWiseStride2, self).__init__()
+        self.dconv1 = nn.Conv2d(8, 8, kernel_size=3, stride=2, padding=1, groups=8)
+
+    def forward(self, x):
+        a = self.dconv1(x)
+        return a
+
+input = Variable(torch.randn(1, 8, 6, 6))
+model = DepthWiseStride2()
+model.eval()
+save_data_and_model("depthwise_stride2", input, model)
+
 class Clip(nn.Module):
 
     def __init__(self):
@@ -2301,6 +2336,31 @@ gemm_model = helper.make_model(graph)
 output_np = gemm_reference_implementation(weight_np.T, input_np.T)
 save_data_and_model("gemm_first_const", input_np, output_np, gemm_model)
 
+## gemm with bias
+def generate_gemm_bias(name, inputA, inputB, inputC):
+    outputY = gemm_reference_implementation(inputA, inputB, inputC)
+
+    A = onnx.helper.make_tensor_value_info("A", onnx.TensorProto.FLOAT, inputA.shape)
+    B = onnx.helper.make_tensor_value_info("B", onnx.TensorProto.FLOAT, inputB.shape)
+    C = onnx.helper.make_tensor_value_info("C", onnx.TensorProto.FLOAT, inputC.shape)
+    B_INIT = onnx.helper.make_tensor("B", onnx.TensorProto.FLOAT, inputB.shape, inputB)
+    C_INIT = onnx.helper.make_tensor("C", onnx.TensorProto.FLOAT, inputC.shape, inputC)
+    Y = onnx.helper.make_tensor_value_info("Y", onnx.TensorProto.FLOAT, outputY.shape)
+    node = onnx.helper.make_node("Gemm", inputs=["A", "B", "C"], outputs=["Y"])
+    graph = onnx.helper.make_graph([node], name, [A, B, C], [Y], [B_INIT, C_INIT])
+    model = onnx.helper.make_model(graph, producer_name=name)
+    onnx.save(model, os.path.join("models", name + ".onnx"))
+
+    input_files = os.path.join("data", "input_" + name)
+    np.save(input_files, inputA.data)
+    output_files = os.path.join("data", "output_" + name)
+    np.save(output_files, np.ascontiguousarray(outputY.data))
+
+inputA = np.random.ranf([3, 6]).astype(np.float32)
+inputB = np.random.ranf([6, 4]).astype(np.float32)
+inputC = np.random.ranf([1, 4]).astype(np.float32)
+generate_gemm_bias("gemm_vector_bias", inputA, inputB, inputC)
+
 # ########################## ReduceSum with Dynamic Batch ##########################
 input_np = np.random.rand(2, 4, 4, 4).astype("float32")
 inputs = [onnx.helper.make_tensor_value_info("input1", onnx.mapping.NP_TYPE_TO_TENSOR_TYPE[input_np.dtype], shape=('?', 4, 4, 4))]
@@ -2441,3 +2501,109 @@ tile=dict(
 )
 
 generate_onnx_single_operator(tile, "tile")
+
+def gen_layer_norm_expanded(input_shape=[1, 4, 5], axis=-1, constant_as_initializers=False):
+    X = onnx.helper.make_tensor_value_info("X", onnx.TensorProto.FLOAT, input_shape)
+    Y = onnx.helper.make_tensor_value_info("Y", onnx.TensorProto.FLOAT, input_shape)
+    nodes = []
+    initializers = []
+
+    class NodeNameManager:
+        def __init__(self):
+            self.name_dict = dict()
+
+        def get_name(self, op_type):
+            if op_type in self.name_dict:
+                self.name_dict[op_type] += 1
+            else:
+                self.name_dict[op_type] = 0
+            
+            return "{}.{}".format(op_type, self.name_dict[op_type])
+
+    node_name_manager = NodeNameManager()
+
+    def make_node(op_type, inputs=None, outputs=None, *args, **kwargs):
+        nonlocal node_name_manager, nodes
+        node_name = node_name_manager.get_name(op_type)
+
+        if inputs is None:
+            inputs = [nodes[-1].output[0]]
+        if outputs is None:
+            outputs = ["{}.out".format(node_name)]
+        return [onnx.helper.make_node(op_type, inputs, outputs, *args, **kwargs)]
+
+    def make_node_with_constant(op_type, constant_value, inputs=None, outputs=None, is_constant_scalar=False):
+        nonlocal node_name_manager, nodes, initializers, constant_as_initializers
+        node_name = node_name_manager.get_name(op_type)
+
+        constant_shape = [] if is_constant_scalar else constant_value.shape
+        tensor = onnx.helper.make_tensor(
+            "Const.{}.tensor".format(node_name),
+            onnx.mapping.NP_TYPE_TO_TENSOR_TYPE[constant_value.dtype],
+            constant_shape,
+            vals=constant_value
+        )
+        if inputs is None:
+            inputs = [nodes[-1].output[0]]
+        if outputs is None:
+            outputs = ["{}.out".format(node_name)]
+
+        if constant_as_initializers:
+            inputs = inputs + [tensor.name]
+            initializers += [tensor]
+            return [onnx.helper.make_node(op_type, inputs, outputs, node_name)]
+        else:
+            node_const = onnx.helper.make_node("Constant", [], ["Const.{}.out".format(node_name)], value=tensor)
+            inputs = inputs + [node_const.output[0]]
+            return [node_const, onnx.helper.make_node(op_type, inputs, outputs, node_name)]
+
+    #   -> ReduceMean ->     -> Pow(2) -> ReduceMean -> Add(epsilon) -> Sqrt ->
+    # x                  Sub                                                    Div -> Mul(weight) -> Add(bias)
+    #   --------------->     ------------------------------------------------->
+
+    nodes += make_node("ReduceMean", inputs=["X"], axes=np.array([axis], dtype=np.int64))
+    nodes += make_node("Sub", inputs=["X", nodes[-1].output[0]])
+    node_sub_0_outname = nodes[-1].output[0]
+    nodes += make_node_with_constant("Pow", np.array([2], dtype=np.float32), is_constant_scalar=True)
+    nodes += make_node("ReduceMean", axes=np.array([axis], dtype=np.int64))
+    nodes += make_node_with_constant("Add", np.array([1e-5], dtype=np.float32), is_constant_scalar=True)
+    nodes += make_node("Sqrt")
+    nodes += make_node("Div", inputs=[node_sub_0_outname, nodes[-1].output[0]])
+    nodes += make_node_with_constant("Mul", np.random.rand(*input_shape[axis:]).astype(np.float32))
+    nodes += make_node_with_constant("Add", np.random.rand(*input_shape[axis:]).astype(np.float32), outputs=["Y"])
+
+    graph_name = "layer_norm_expanded"
+    if constant_as_initializers:
+        graph_name += "with_initializers"
+    graph_def = onnx.helper.make_graph(
+        nodes,
+        graph_name,
+        [X],
+        [Y],
+        initializers
+    )
+    model_def = onnx.helper.make_model(graph_def, producer_name="github.com/opencv/opencv_extra")
+    onnx.checker.check_model(model_def)
+    shape_inferred_model_def = onnx.shape_inference.infer_shapes(model_def)
+    onnx.save(shape_inferred_model_def, "models/{}.onnx".format(graph_name))
+
+    # infer & save data
+    input_blob = np.random.rand(*input_shape).astype(np.float32)
+
+    import onnxruntime as ort
+    sess = ort.InferenceSession("models/{}.onnx".format(graph_name))
+    output_blobs = sess.run(["Y"], {"X": input_blob})
+    np.save("data/input_{}.npy".format(graph_name), input_blob)
+    np.save("data/output_{}.npy".format(graph_name), output_blobs[0])
+
+gen_layer_norm_expanded()
+gen_layer_norm_expanded(constant_as_initializers=True)
+
+################# GELU #################
+
+x = torch.randn(1, 5, 20)
+gelu = nn.GELU()
+save_data_and_model("gelu", x, gelu)
+
+gelu_approximation = nn.GELU('tanh')
+save_data_and_model("gelu_approximation", x, gelu_approximation)
