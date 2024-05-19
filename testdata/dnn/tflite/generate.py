@@ -52,15 +52,23 @@ def save_tflite_model(model, inp, name):
     converter = tf.lite.TFLiteConverter.from_concrete_functions([func])
     tflite_model = converter.convert()
 
-    interpreter = tf.lite.Interpreter(model_content=tflite_model)
-
     with open(f'{name}.tflite', 'wb') as f:
         f.write(tflite_model)
 
     out = model(inp)
+    out = np.array(out)
 
-    np.save(f'{name}_inp.npy', inp.transpose(0, 3, 1, 2))
-    np.save(f'{name}_out_Identity.npy', np.array(out).transpose(0, 3, 1, 2))
+    # convert NHWC to NCHW format
+    if inp.ndim == 4:
+        inp = inp.transpose(0, 3, 1, 2)
+        inp = np.copy(inp, order='C').astype(inp.dtype)
+
+    if out.ndim == 4:
+        out = out.transpose(0, 3, 1, 2)
+        out = np.copy(out, order='C').astype(out.dtype)
+
+    np.save(f'{name}_inp.npy', inp)
+    np.save(f'{name}_out_Identity.npy', out)
 
 
 @tf.function(input_signature=[tf.TensorSpec(shape=[1, 3, 3, 1], dtype=tf.float32)])
@@ -75,3 +83,87 @@ def replicate_by_pack(x):
 inp = np.random.standard_normal((1, 3, 3, 1)).astype(np.float32)
 save_tflite_model(replicate_by_pack, inp, 'replicate_by_pack')
 
+@tf.function(input_signature=[tf.TensorSpec(shape=[1, 3], dtype=tf.float32)])
+def split(x):
+    splitted = tf.split(
+        x, 3, axis=-1, num=None, name='split'
+    )
+    return tf.concat((splitted[2], splitted[1], splitted[0]), axis=-1)
+
+inp = np.random.standard_normal((1, 3)).astype(np.float32)
+save_tflite_model(split, inp, 'split')
+
+
+fully_connected = tf.keras.models.Sequential([
+  tf.keras.layers.Dense(3),
+  tf.keras.layers.ReLU(),
+  tf.keras.layers.Softmax(),
+])
+
+fully_connected = tf.function(
+      fully_connected.call,
+      input_signature=[tf.TensorSpec((1,2), tf.float32)],
+)
+
+inp = np.random.standard_normal((1, 2)).astype(np.float32)
+save_tflite_model(fully_connected, inp, 'fully_connected')
+
+permutation_3d = tf.keras.models.Sequential([
+  tf.keras.layers.Permute((2,1))
+])
+
+permutation_3d = tf.function(
+    permutation_3d.call,
+    input_signature=[tf.TensorSpec((1,2,3), tf.float32)],
+)
+inp = np.random.standard_normal((1, 2, 3)).astype(np.float32)
+save_tflite_model(permutation_3d, inp, 'permutation_3d')
+
+# Temporarily disabled as TFLiteConverter produces a incorrect graph in this case
+#permutation_4d_0123 = tf.keras.models.Sequential([
+#  tf.keras.layers.Permute((1,2,3)),
+#  tf.keras.layers.Conv2D(3,1)
+#])
+#
+#permutation_4d_0123 = tf.function(
+#    permutation_4d_0123.call,
+#    input_signature=[tf.TensorSpec((1,2,3,4), tf.float32)],
+#)
+#inp = np.random.standard_normal((1, 2, 3, 4)).astype(np.float32)
+#save_tflite_model(permutation_4d_0123, inp, 'permutation_4d_0123')
+
+permutation_4d_0132 = tf.keras.models.Sequential([
+  tf.keras.layers.Permute((1,3,2)),
+  tf.keras.layers.Conv2D(3,1)
+])
+
+permutation_4d_0132 = tf.function(
+    permutation_4d_0132.call,
+    input_signature=[tf.TensorSpec((1,2,3,4), tf.float32)],
+)
+inp = np.random.standard_normal((1, 2, 3, 4)).astype(np.float32)
+save_tflite_model(permutation_4d_0132, inp, 'permutation_4d_0132')
+
+permutation_4d_0213 = tf.keras.models.Sequential([
+  tf.keras.layers.Permute((2,1,3)),
+  tf.keras.layers.Conv2D(3,1)
+])
+
+permutation_4d_0213 = tf.function(
+    permutation_4d_0213.call,
+    input_signature=[tf.TensorSpec((1,2,3,4), tf.float32)],
+)
+inp = np.random.standard_normal((1, 2, 3, 4)).astype(np.float32)
+save_tflite_model(permutation_4d_0213, inp, 'permutation_4d_0213')
+
+permutation_4d_0231 = tf.keras.models.Sequential([
+  tf.keras.layers.Permute((2,3,1)),
+  tf.keras.layers.Conv2D(3,1)
+])
+
+permutation_4d_0231 = tf.function(
+    permutation_4d_0231.call,
+    input_signature=[tf.TensorSpec((1,2,3,4), tf.float32)],
+)
+inp = np.random.standard_normal((1, 2, 3, 4)).astype(np.float32)
+save_tflite_model(permutation_4d_0231, inp, 'permutation_4d_0231')
